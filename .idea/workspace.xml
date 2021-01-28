@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="d2fe43b5-9003-4b5e-880f-ca7c15ea2b55" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -22,7 +47,7 @@
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RunManager">
-    <configuration name="database_com" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="dbfunctions_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Senior-Design-Thermal-App" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -34,7 +59,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/database_com.py" />
+      <option name="SCRIPT_NAME" value="D:\Github\Senior-Design-Thermal-App\dbfunctions_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -45,7 +70,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.database_com" />
+        <item itemvalue="Python.dbfunctions_test" />
       </list>
     </recent_temporary>
   </component>
@@ -62,31 +87,46 @@
     </task>
     <servers />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="WindowStateProjectService">
     <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1611856818637">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611856818637" />
+    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1611865648550">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611865648550" />
     <state x="805" y="311" key="FileChooserDialogImpl" timestamp="1611857278153">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state x="805" y="311" key="FileChooserDialogImpl/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857278153" />
-    <state width="2027" height="305" key="GridCell.Tab.0.bottom" timestamp="1611857951038">
+    <state width="2027" height="305" key="GridCell.Tab.0.bottom" timestamp="1611868057656">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="305" key="GridCell.Tab.0.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857951038" />
-    <state width="2027" height="305" key="GridCell.Tab.0.center" timestamp="1611857951038">
+    <state width="2027" height="305" key="GridCell.Tab.0.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611868057656" />
+    <state width="2027" height="305" key="GridCell.Tab.0.center" timestamp="1611868057656">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="305" key="GridCell.Tab.0.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857951038" />
-    <state width="2027" height="305" key="GridCell.Tab.0.left" timestamp="1611857951037">
+    <state width="2027" height="305" key="GridCell.Tab.0.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611868057656" />
+    <state width="2027" height="305" key="GridCell.Tab.0.left" timestamp="1611868057656">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="305" key="GridCell.Tab.0.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857951037" />
-    <state width="2027" height="305" key="GridCell.Tab.0.right" timestamp="1611857951038">
+    <state width="2027" height="305" key="GridCell.Tab.0.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611868057656" />
+    <state width="2027" height="305" key="GridCell.Tab.0.right" timestamp="1611868057656">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="305" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857951038" />
+    <state width="2027" height="305" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611868057656" />
     <state x="533" y="201" key="SettingsEditor" timestamp="1611856287797">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>

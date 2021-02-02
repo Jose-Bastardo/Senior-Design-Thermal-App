@@ -11,7 +11,7 @@ import dlib
 from math import hypot
 import time
 
-datFolderLoc = 'Face_Recognition_Test/extract/'
+datFolderLoc = 'Face_Recognition/extract/'
 
 # logFile = open("log.txt", "a")
 # sys.stdout = logFile
@@ -93,7 +93,7 @@ for n in range(5):
             timeElapsed = time.time() - startTime
             if timeElapsed > 1.5:
                 camImg = "Test" + str(n) + ".jpg"
-                cv2.imwrite("Face_Recognition_Test/uploadedImages/" + camImg, frame)
+                cv2.imwrite("Face_Recognition/uploadedImages/" + camImg, frame)
                 break
 
         # debug: press space to exit webcam
@@ -109,8 +109,8 @@ for n in range(5):
 cap.release()
 cv2.destroyAllWindows()
 
-uploadedImageLoc = 'Face_Recognition_Test/uploadedImages/'
-datFolderLoc = 'Face_Recognition_Test/dat/'
+uploadedImageLoc = 'Face_Recognition/uploadedImages/'
+datFolderLoc = 'Face_Recognition/dat/'
 
 
 # Create random number based on specified length of n

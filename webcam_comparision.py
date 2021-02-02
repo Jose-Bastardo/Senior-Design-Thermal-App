@@ -19,7 +19,7 @@ import time
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-datFolderLoc = 'Face_Recognition_Test/extract/'
+datFolderLoc = 'Face_Recognition/extract/'
 
 #logFile = open("log.txt", "a")
 #sys.stdout = logFile

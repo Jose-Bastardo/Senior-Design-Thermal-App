@@ -15,7 +15,7 @@ Builder.load_string('''
     orientation: 'vertical'
     Camera:
         id: camera
-        resolution: (400, 400)
+        resolution: (1920, 1080)
         play: True
     Button:
         text: 'Capture'

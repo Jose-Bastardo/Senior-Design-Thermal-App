@@ -20,8 +20,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2fe43b5-9003-4b5e-880f-ca7c15ea2b55" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/Final.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/save_patterns_from_uploaded_img.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/shape_predictor_68_face_landmarks.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Final.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Thermal App GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Thermal App GUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/save_patterns_from_uploaded_img.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/shape_predictor_68_face_landmarks.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webcam_comparision.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +64,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Thermal_App" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
-  <component name="RunManager" selected="Python.Thermal App GUI">
+  <component name="RunManager" selected="Python.webcam_comparision">
     <configuration name="Thermal App GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Senior-Design-Thermal-App" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -99,8 +107,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="webcam_comparision" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Senior-Design-Thermal-App" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Face_Recognition" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.webcam_comparision" />
         <item itemvalue="Python.Thermal App GUI" />
         <item itemvalue="Python.dbfunctions_test" />
       </list>
@@ -139,14 +169,15 @@
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611856818637" />
-    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1611865648550">
+    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1613070338228">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611865648550" />
+    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613070338228" />
     <state x="805" y="311" key="FileChooserDialogImpl" timestamp="1611857278153">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state x="805" y="311" key="FileChooserDialogImpl/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857278153" />
+<<<<<<< Updated upstream
     <state width="1899" height="281" key="GridCell.Tab.0.bottom" timestamp="1612295643260">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -166,6 +197,27 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="2027" height="305" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611868057656" />
+=======
+    <state width="2027" height="301" key="GridCell.Tab.0.bottom" timestamp="1613071271266">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="301" key="GridCell.Tab.0.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613071271266" />
+    <state width="1899" height="281" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
+    <state width="2027" height="301" key="GridCell.Tab.0.center" timestamp="1613071271266">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="301" key="GridCell.Tab.0.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613071271266" />
+    <state width="1899" height="281" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
+    <state width="2027" height="301" key="GridCell.Tab.0.left" timestamp="1613071271266">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="301" key="GridCell.Tab.0.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613071271266" />
+    <state width="1899" height="281" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
+    <state width="2027" height="301" key="GridCell.Tab.0.right" timestamp="1613071271266">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="301" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613071271266" />
+>>>>>>> Stashed changes
     <state width="1899" height="281" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
     <state x="533" y="201" key="SettingsEditor" timestamp="1611856287797">
       <screen x="0" y="0" width="2048" height="1112" />

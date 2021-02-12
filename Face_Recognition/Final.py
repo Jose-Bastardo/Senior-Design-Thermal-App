@@ -121,7 +121,7 @@ def randomNum(n):
 
 
 # Create or open log.txt to be written
-logFile = open("log.txt", "a")
+logFile = open("../log.txt", "a")
 sys.stdout = logFile
 print("\n\n========================================================================================")
 print("----------------------------------------------------------------------------------------")

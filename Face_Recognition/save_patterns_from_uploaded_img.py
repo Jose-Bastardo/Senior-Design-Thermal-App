@@ -19,8 +19,8 @@ import random #Used to generate random reservation ID
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #Part 1: System runs faical recognition on uploaded images within its folder
 #and save patterns into .dat files
-uploadedImageLoc = 'Face_Recognition/uploadedImages/'
-datFolderLoc = 'Face_Recognition/dat/'
+uploadedImageLoc = 'images/'
+datFolderLoc = 'dat/'
 
 #Create random number based on specified length of n
 def randomNum(n):

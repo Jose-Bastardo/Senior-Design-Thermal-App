@@ -2,134 +2,35 @@
 
 ========================================================================================
 ----------------------------------------------------------------------------------------
-Running uploaded images' patterns extraction
-Date and time of code execution: 11/13/2020 10:23:59 AM
-----------------------------------------------------------------------------------------
-Folder path does not exists. Terminating program....
+Captured
 
 
 ========================================================================================
 ----------------------------------------------------------------------------------------
 Running uploaded images' patterns extraction
-Date and time of code execution: 11/13/2020 10:29:04 AM
+Date and time of code execution: 02/12/2021 01:15:50 PM
 ----------------------------------------------------------------------------------------
-Folder path does not exists. Terminating program....
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running uploaded images' patterns extraction
-Date and time of code execution: 11/13/2020 10:32:51 AM
-----------------------------------------------------------------------------------------
-Loading image: Capture.JPG
-Saved pattern data as 23851874046344168675 under dat folder.
+Loading image: IMG_20210212_131249.png
+Saved pattern data as 90241910689333313484 under dat folder.
+Loading image: IMG_20210212_131420.png
+Saved pattern data as 15496751010163648474 under dat folder.
+Loading image: IMG_20210212_131549.png
+Saved pattern data as 79288718409268516209 under dat folder.
 SUCCESS: Patterns extraction completed. Terminiating program.
 ========================================================================================
 
 
 ========================================================================================
 ----------------------------------------------------------------------------------------
-Running uploaded images' patterns extraction
-Date and time of code execution: 11/13/2020 10:44:00 AM
-----------------------------------------------------------------------------------------
-SUCCESS: Patterns extraction completed. Terminiating program.
-========================================================================================
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running webcam_comparision.py
-Date and time of code execution: 11/13/2020 12:22:08 PM
-----------------------------------------------------------------------------------------
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running webcam_comparision.py
-Date and time of code execution: 11/13/2020 12:24:19 PM
-----------------------------------------------------------------------------------------
-Face found. Beginning comparision check....
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running webcam_comparision.py
-Date and time of code execution: 11/13/2020 12:24:48 PM
-----------------------------------------------------------------------------------------
-Face found. Beginning comparision check....
-SUCCESS: 23851874046344168675.dat has a face that matches the person in Test.jpg
-Deleting 23851874046344168675.dat and Test.jpg from system before terminating program.
-========================================================================================
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running webcam_comparision.py
-Date and time of code execution: 11/13/2020 12:25:38 PM
-----------------------------------------------------------------------------------------
-Face found. Beginning comparision check....
-FAILURE: All available .dat files don't have any face that matches with the person found in Test.jpg
-Deleting Test.jpg from system before terminating program.
-========================================================================================
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running webcam_comparision.py
-Date and time of code execution: 11/13/2020 12:28:05 PM
-----------------------------------------------------------------------------------------
-Face found. Beginning comparision check....
-FAILURE: All available .dat files don't have any face that matches with the person found in Test.jpg
-Deleting Test.jpg from system before terminating program.
-========================================================================================
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running webcam_comparision.py
-Date and time of code execution: 11/13/2020 12:29:34 PM
-----------------------------------------------------------------------------------------
-Face found. Beginning comparision check....
-FAILURE: All available .dat files don't have any face that matches with the person found in Test.jpg
-Deleting Test.jpg from system before terminating program.
-========================================================================================
+Captured
 
 
 ========================================================================================
 ----------------------------------------------------------------------------------------
 Running uploaded images' patterns extraction
-Date and time of code execution: 11/13/2020 01:15:36 PM
+Date and time of code execution: 02/12/2021 01:15:58 PM
 ----------------------------------------------------------------------------------------
-Loading image: Test.jpg
-Saved pattern data as 38696170414422550741 under dat folder.
-Loading image: Test0.jpg
-Saved pattern data as 97603614211776283801 under dat folder.
-Loading image: Test1.jpg
-Saved pattern data as 23880075758306477265 under dat folder.
-Loading image: Test2.jpg
-Saved pattern data as 17492303415355714418 under dat folder.
-Loading image: Test3.jpg
-Saved pattern data as 23789805109576236528 under dat folder.
-Loading image: Test4.jpg
-Saved pattern data as 88601444560868772700 under dat folder.
-SUCCESS: Patterns extraction completed. Terminiating program.
-========================================================================================
-
-
-========================================================================================
-----------------------------------------------------------------------------------------
-Running uploaded images' patterns extraction
-Date and time of code execution: 12/02/2020 06:01:39 PM
-----------------------------------------------------------------------------------------
-Loading image: Test0.jpg
-Saved pattern data as 17689287808017292403 under dat folder.
-Loading image: Test1.jpg
-Saved pattern data as 77144820722706176321 under dat folder.
-Loading image: Test2.jpg
-Saved pattern data as 15633247643478736133 under dat folder.
-Loading image: Test3.jpg
-Saved pattern data as 66910063215334631387 under dat folder.
-Loading image: Test4.jpg
-Saved pattern data as 61950520772557912708 under dat folder.
+Loading image: IMG_20210212_131558.png
+Saved pattern data as 49973203931310991332 under dat folder.
 SUCCESS: Patterns extraction completed. Terminiating program.
 ========================================================================================

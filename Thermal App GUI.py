@@ -7,111 +7,28 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.config import Config
 from kivy.core.window import Window
 import time
+import random
+from datetime import datetime
+import sys
+import face_recognition
+import pickle
+import os
+from os import path
 
 Window.fullscreen = True
-
-__all__ = ('Camera', )
-
-from kivy.uix.image import Image
-from kivy.core.camera import Camera as CoreCamera
-from kivy.properties import NumericProperty, ListProperty, \
-    BooleanProperty
-
-
-class Camera(Image):
-    '''Camera class. See module documentation for more information.
-    '''
-
-    play = BooleanProperty(True)
-    '''Boolean indicating whether the camera is playing or not.
-    You can start/stop the camera by setting this property::
-
-        # start the camera playing at creation (default)
-        cam = Camera(play=True)
-
-        # create the camera, and start later
-        cam = Camera(play=False)
-        # and later
-        cam.play = True
-
-    :attr:`play` is a :class:`~kivy.properties.BooleanProperty` and defaults to
-    True.
-    '''
-
-    index = NumericProperty(-1)
-    '''Index of the used camera, starting from 0.
-
-    :attr:`index` is a :class:`~kivy.properties.NumericProperty` and defaults
-    to -1 to allow auto selection.
-    '''
-
-    resolution = ListProperty([-1, -1])
-    '''Preferred resolution to use when invoking the camera. If you are using
-    [-1, -1], the resolution will be the default one::
-
-        # create a camera object with the best image available
-        cam = Camera()
-
-        # create a camera object with an image of 320x240 if possible
-        cam = Camera(resolution=(320, 240))
-
-    .. warning::
-
-        Depending on the implementation, the camera may not respect this
-        property.
-
-    :attr:`resolution` is a :class:`~kivy.properties.ListProperty` and defaults
-    to [-1, -1].
-    '''
-
-    def __init__(self, **kwargs):
-        self._camera = None
-        super(Camera, self).__init__(**kwargs)
-        if self.index == -1:
-            self.index = 0
-        on_index = self._on_index
-        fbind = self.fbind
-        fbind('index', on_index)
-        fbind('resolution', on_index)
-        on_index()
-
-    def on_tex(self, *l):
-        self.canvas.ask_update()
-
-    def _on_index(self, *largs):
-        self._camera = None
-        if self.index < 0:
-            return
-        if self.resolution[0] < 0 or self.resolution[1] < 0:
-            self._camera = CoreCamera(index=self.index, stopped=True)
-        else:
-            self._camera = CoreCamera(index=self.index,
-                                  resolution=self.resolution, stopped=True)
-        self._camera.bind(on_load=self._camera_loaded)
-        if self.play:
-            self._camera.start()
-            self._camera.bind(on_texture=self.on_tex)
-
-    def _camera_loaded(self, *largs):
-        if self._camera.texture is not None:
-            self.texture = self._camera.texture
-            self.texture_size = list(self.texture.size)
-
-    def on_play(self, instance, value):
-        if not self._camera:
-            return
-        if value:
-            self._camera.start()
-        else:
-            self._camera.stop()
 
 Builder.load_string('''
 <CameraClick>:
     orientation: 'vertical'
     Camera:
         id: camera
-        resolution: (400, 400)
+        resolution: (1920, 1080)
         play: True
+    Button:
+        text: 'Capture'
+        size_hint_y: None
+        height: '48dp'
+        on_press: root.capture()
 ''')
 
 
@@ -121,7 +38,92 @@ class CameraClick(BoxLayout):
         Function to capture the images and give them the names
         according to their captured time and date.
         '''
+        logFile = open("log.txt", "a")
+        sys.stdout = logFile
+        print("========================================================================================")
+        print("----------------------------------------------------------------------------------------")
+
         camera = self.ids['camera']
         timestr = time.strftime("%Y%m%d_%H%M%S")
         camera.export_to_png("Face_Recognition/images/IMG_{}.png".format(timestr))
         print("Captured")
+
+        uploadedImageLoc = 'Face_Recognition/images/'
+        datFolderLoc = 'Face_Recognition/dat/'
+
+        # Create random number based on specified length of n
+        def randomNum(n):
+            min = pow(10, n - 1)
+            max = pow(10, n) - 1
+            return random.randint(min, max)
+
+        # Create or open log.txt to be written
+        print("\n\n========================================================================================")
+        print("----------------------------------------------------------------------------------------")
+        print("Running uploaded images' patterns extraction")
+        # Print out date and time of code execution
+        todayDate = datetime.now()
+        print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
+        print("----------------------------------------------------------------------------------------")
+
+        # Check if upload folder directory is valid
+        if (path.exists(uploadedImageLoc) == False):
+            print('Folder path does not exists. Terminating program....')
+            sys.exit()
+
+        else:
+            # For loop to read images on uploadedImages folder
+            for imageFile in os.listdir(uploadedImageLoc):
+                print("Loading image:", imageFile)
+
+                # checks if the file does exists
+                if os.path.isfile(uploadedImageLoc + imageFile):
+                    # print("File located! Executing facial pattern extraction")
+
+                    # start of encoding
+                    known_image = face_recognition.load_image_file(uploadedImageLoc + imageFile)
+                    try:
+                        known_face_encoding = face_recognition.face_encodings(known_image)[0]
+                    except IndexError:
+                        print(
+                            "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
+                        sys.stdout.close()
+                        sys.exit()
+
+                    known_faces = [
+                        known_face_encoding
+                    ]
+
+                    # Save encoding as .dat file
+                    fileLength = len(imageFile) - 4
+                    datExtension = ".dat"
+                    if (fileLength <= 0):
+                        print("ERROR! File naming failed! Terminating program....")
+                        sys.stdout.close()
+                        sys.exit()
+
+                    else:
+                        # Generate a random 20 number code for reservation ID
+                        datFileName = str(randomNum(20))
+                        with open(datFolderLoc + datFileName + datExtension, 'wb') as f:
+                            pickle.dump(known_faces, f)
+                            print("Saved pattern data as " + datFileName + " under dat folder.")
+                        os.remove(uploadedImageLoc + imageFile)
+                        # Send number to the hotel database
+                        # OR, do this after booking
+
+                else:
+                    print("Image doesn't exist! Terminating program....")
+                    print("========================================================================================")
+                    sys.exit()
+            print("SUCCESS: Patterns extraction completed. Terminiating program.")
+            print("========================================================================================")
+
+
+class TestCamera(App):
+
+    def build(self):
+        return CameraClick()
+
+
+TestCamera().run()

@@ -25,7 +25,7 @@ import dlib
 from math import hypot
 import face_recognition
 
-Window.fullscreen = True
+Window.fullscreen = 'auto'
 
 Builder.load_string('''
 
@@ -39,15 +39,26 @@ class KivyCamera(Image):
         self.capture = capture
         Clock.schedule_interval(self.update, 1.0 / fps)
 
-
     def update(self, dt):
         ret, frame = self.capture.read()
+        if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
+            scale_percent = Window.width/frame.shape[1]
+        else:
+            scale_percent = Window.height / frame.shape[0]
+
+        width = int(frame.shape[1] * scale_percent)
+        height = int(frame.shape[0] * scale_percent)
+        dim = (width, height)
+        resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
         if ret:
             # convert it to texture
-            buf1 = cv2.flip(frame, 0)
+            buf1 = cv2.flip(resized, 0)
             buf = buf1.tobytes()
             image_texture = Texture.create(
-                size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                #size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
+
             image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
             # display image from the texture
             self.texture = image_texture
@@ -58,19 +69,19 @@ class layout(FloatLayout):
         # make sure we aren't overriding any important functionality
         super(layout, self).__init__(**kwargs)
         self.capture = cv2.VideoCapture(0)
-        self.my_camera = KivyCamera(capture=self.capture, fps=30)
+        self.my_camera = KivyCamera(capture=self.capture, fps=30, size=Window.size)
         self.add_widget(self.my_camera)
 
         self.capturebutton = Button(text="Capture",
-                               size_hint=(.7, .1),
-                               # on_press=self.capturebtn(),
-                               pos_hint={'center_x': .5, 'y': .1},
-                               )
+                                    size_hint=(.7, .1),
+                                    # on_press=self.capturebtn(),
+                                    pos_hint={'center_x': .5, 'y': .1},
+                                    )
         self.comparebutton = Button(text="Compare",
-                               size_hint=(.7, .1),
-                               # on_press=self.comparebtn(),
-                               pos_hint={'center_x': .5, 'y': 0},
-                               )
+                                    size_hint=(.7, .1),
+                                    # on_press=self.comparebtn(),
+                                    pos_hint={'center_x': .5, 'y': 0},
+                                    )
         self.successtb = Label(text="[color=ffffff]Success[/color]",
                                pos_hint={"center_x": .5},
                                markup=True,
@@ -88,8 +99,8 @@ class layout(FloatLayout):
 
     def resetfail(self):
         self.remove_widget(self.failtb)
-        self.comparebutton.disabled=False
-        self.capturebutton.disabled=False
+        self.comparebutton.disabled = False
+        self.capturebutton.disabled = False
 
     def resetsuccess(self):
         self.remove_widget(self.successtb)
@@ -178,7 +189,7 @@ class layout(FloatLayout):
                         # Send number to the hotel database
                         # OR, do this after booking
                         dbfunctions.insertfacedb(31, datFolderLoc + datFileName + datExtension)
-                        #os.remove(datFolderLoc + datFileName + datExtension)
+                        # os.remove(datFolderLoc + datFileName + datExtension)
 
                 else:
                     print("Image doesn't exist! Terminating program....")
@@ -264,7 +275,7 @@ class layout(FloatLayout):
 
                 # cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-            #key = cv2.waitKey(5)
+            # key = cv2.waitKey(5)
             if TOTAL >= 2:
                 if (timeStart == False):
                     startTime = time.time()
@@ -329,8 +340,6 @@ class layout(FloatLayout):
             Clock.schedule_once(lambda dt: self.resetfail(), 10)
             print("========================================================================================")
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
 
 
 class CamApp(App):

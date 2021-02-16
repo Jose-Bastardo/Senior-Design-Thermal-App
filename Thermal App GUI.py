@@ -41,6 +41,7 @@ class KivyCamera(Image):
 
     def update(self, dt):
         ret, frame = self.capture.read()
+
         if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
             scale_percent = Window.width/frame.shape[1]
         else:

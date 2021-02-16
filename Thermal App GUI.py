@@ -61,12 +61,12 @@ class layout(FloatLayout):
         self.my_camera = KivyCamera(capture=self.capture, fps=30)
         self.add_widget(self.my_camera)
 
-        capturebutton = Button(text="Capture",
+        self.capturebutton = Button(text="Capture",
                                size_hint=(.7, .1),
                                # on_press=self.capturebtn(),
                                pos_hint={'center_x': .5, 'y': .1},
                                )
-        comparebutton = Button(text="Compare",
+        self.comparebutton = Button(text="Compare",
                                size_hint=(.7, .1),
                                # on_press=self.comparebtn(),
                                pos_hint={'center_x': .5, 'y': 0},
@@ -80,11 +80,21 @@ class layout(FloatLayout):
                             markup=True,
                             )
 
-        self.add_widget(capturebutton)
-        self.add_widget(comparebutton)
+        self.add_widget(self.capturebutton)
+        self.add_widget(self.comparebutton)
 
-        capturebutton.bind(on_press=lambda x: self.capturebtn(None))
-        comparebutton.bind(on_press=lambda x: self.comparebtn(None))
+        self.capturebutton.bind(on_press=lambda x: self.capturebtn(None))
+        self.comparebutton.bind(on_press=lambda x: self.comparebtn(None))
+
+    def resetfail(self):
+        self.remove_widget(self.failtb)
+        self.comparebutton.disabled=False
+        self.capturebutton.disabled=False
+
+    def resetsuccess(self):
+        self.remove_widget(self.successtb)
+        self.comparebutton.disabled = False
+        self.capturebutton.disabled = False
 
     def on_stop(self):
         # without this, app will not exit even if the window is closed
@@ -181,6 +191,9 @@ class layout(FloatLayout):
             print("========================================================================================")
 
     def comparebtn(self, *args):
+
+        self.comparebutton.disabled = True
+        self.capturebutton.disabled = True
 
         def randomNum(n):
             min = pow(10, n - 1)
@@ -307,6 +320,7 @@ class layout(FloatLayout):
             print("========================================================================================")
             os.remove(camImg)
             os.remove(dataFile)
+            Clock.schedule_once(lambda dt: self.resetsuccess(), 10)
 
         else:
             self.add_widget(self.failtb)
@@ -315,8 +329,11 @@ class layout(FloatLayout):
             print("Deleting", camImg, "from system before terminating program.")
             # Deletes webcam image
             os.remove(camImg)
+            Clock.schedule_once(lambda dt: self.resetfail(), 10)
             print("========================================================================================")
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 
 
 class CamApp(App):

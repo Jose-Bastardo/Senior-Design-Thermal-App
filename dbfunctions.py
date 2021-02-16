@@ -9,12 +9,35 @@ def newuser(firstname, lastname, email, password):
                                  host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
     cursor = connection.cursor()
     # Insert new user information
+
+    cursor.execute("Select userid from user "
+                   " where firstname = '" + firstname +
+                   "' and lastname = '" + lastname +
+                   "' and email = '" + email +
+                   "' and password = '" + password + "'")
+
+    userid = cursor.fetchone()
+
+    if userid is not None:
+        print("user already exists\n")
+        return userid[0]
+
     cursor.execute("INSERT INTO user(firstname, lastname, email, password) VALUES (?,?,?,?)",
                    (firstname, lastname, email, password))
     connection.commit()
 
+    cursor.execute("Select userid from user "
+                   " where firstname = '" + firstname +
+                   "' and lastname = '" + lastname +
+                   "' and email = '" + email +
+                   "' and password = '" + password + "'")
+
+    userid = cursor.fetchone()
+
     cursor.close()
     connection.close()
+
+    return userid[0]
 
 
 # Insert facial recognition file into database
@@ -49,6 +72,25 @@ def returnface(datid):
 
     return dat[0]
 
+def returnallfaces():
+    # Establish connection to database
+    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
+                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    cursor = connection.cursor()
+
+    cursor.execute("Select userid, datfile from dat")
+
+    data = cursor.fetchall()
+
+    if data is None:
+        print("No dat files")
+        return None
+
+    cursor.close()
+    connection.close()
+
+    return data
+
 # Print user information
 def printuser(userid):
     # Establish connection to database
@@ -57,10 +99,12 @@ def printuser(userid):
     cursor = connection.cursor()
 
     cursor.execute("SELECT userid, firstname, lastname, email, password FROM user "
-                   "where userid = " + userid)
+                   "where userid = " + str(userid))
 
     # print data
     row = cursor.fetchone()
+    if row is None:
+        return
     print(row)
     print(*row, sep='\t')
     print(row[1])

@@ -20,22 +20,42 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2fe43b5-9003-4b5e-880f-ca7c15ea2b55" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/20489321443844327686.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/27427119296045423304.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/32714560311050856855.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/40056038920792755196.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/48530557069465809299.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/55685706753207138213.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/69224658322870887092.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/72219622616116332225.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/99058604627413726787.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/scan_compare/IMG_20210212_161456.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/scan_compare/IMG_20210212_161729.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Face_Recognition/scan_compare/IMG_20210212_162041.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/shape_predictor_68_face_landmarks.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/39879158905873969238.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/66106137263061984782.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/46908922600157086774.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/50509868979249167625.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Face_Recognition/extract/77144820722706176321.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/15496751010163648474.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/15633247643478736133.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/17492303415355714418.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/17689287808017292403.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/20489321443844327686.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/23789805109576236528.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/23880075758306477265.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/27427119296045423304.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/32714560311050856855.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/34337752470508093025.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/38696170414422550741.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/40056038920792755196.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/48530557069465809299.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/49973203931310991332.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/55685706753207138213.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/61950520772557912708.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/66910063215334631387.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/69224658322870887092.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/72219622616116332225.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/77144820722706176321.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/79288718409268516209.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/88601444560868772700.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/90241910689333313484.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/97603614211776283801.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/dat/99058604627413726787.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/extract/88601444560868772700.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/extract/97603614211776283801.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" beforeDir="false" afterPath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Thermal App GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Thermal App GUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dbfunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbfunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dbfunctions_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbfunctions_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/log.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -93,6 +113,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Thermal App GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="dbfunctions_test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Senior-Design-Thermal-App" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/dbfunctions_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -167,9 +208,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.Thermal App GUI" />
-        <item itemvalue="Python.webcam_comparision" />
-        <item itemvalue="Python.save_patterns_from_uploaded_img" />
         <item itemvalue="Python.dbfunctions_test" />
+        <item itemvalue="Python.webcam_comparision" />
+        <item itemvalue="Python.dbfunctions_test (1)" />
+        <item itemvalue="Python.save_patterns_from_uploaded_img" />
       </list>
     </recent_temporary>
   </component>
@@ -191,7 +233,13 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="CUSTOM_BOOLEAN_PROPERTIES">
+                <map>
+                  <entry key="Show.Git.Branches" value="false" />
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -202,14 +250,18 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1611856818637">
+    <state x="651" y="235" key="#Inspections" timestamp="1613234315320">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611856818637" />
-    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1611865648550">
+    <state x="651" y="235" key="#Inspections/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613234315320" />
+    <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1613234632565">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611865648550" />
+    <state x="479" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613234632565" />
+    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1613231777541">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state x="734" y="358" key="#com.intellij.fileTypes.FileTypeChooser/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613231777541" />
     <state x="755" y="303" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1613154867295">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
@@ -218,42 +270,46 @@
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state x="805" y="311" key="FileChooserDialogImpl/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857278153" />
-    <state width="2027" height="376" key="GridCell.Tab.0.bottom" timestamp="1613192565064">
+    <state width="1899" height="272" key="GridCell.Tab.0.bottom" timestamp="1613440074890">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="2027" height="376" key="GridCell.Tab.0.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="1899" height="272" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="1899" height="272" key="GridCell.Tab.0.center" timestamp="1613440074890">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="2027" height="376" key="GridCell.Tab.0.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="1899" height="272" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="1899" height="272" key="GridCell.Tab.0.left" timestamp="1613440074890">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="2027" height="376" key="GridCell.Tab.0.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="1899" height="272" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="1899" height="272" key="GridCell.Tab.0.right" timestamp="1613440074890">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="2027" height="376" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="1899" height="272" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="2027" height="376" key="GridCell.Tab.1.bottom" timestamp="1613247581900">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.0.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="1899" height="281" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
-    <state width="2027" height="376" key="GridCell.Tab.0.center" timestamp="1613192565064">
+    <state width="2027" height="376" key="GridCell.Tab.1.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="2027" height="376" key="GridCell.Tab.1.center" timestamp="1613247581900">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.0.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="1899" height="281" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
-    <state width="2027" height="376" key="GridCell.Tab.0.left" timestamp="1613192565064">
+    <state width="2027" height="376" key="GridCell.Tab.1.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="2027" height="376" key="GridCell.Tab.1.left" timestamp="1613247581900">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.0.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="1899" height="281" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
-    <state width="2027" height="376" key="GridCell.Tab.0.right" timestamp="1613192565064">
+    <state width="2027" height="376" key="GridCell.Tab.1.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="2027" height="376" key="GridCell.Tab.1.right" timestamp="1613247581900">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="1899" height="281" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1612295643260" />
-    <state width="2027" height="376" key="GridCell.Tab.1.bottom" timestamp="1613192565064">
+    <state width="2027" height="376" key="GridCell.Tab.1.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state x="835" y="259" key="RollbackChangesDialog" timestamp="1613235644085">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="2027" height="376" key="GridCell.Tab.1.center" timestamp="1613192565064">
-      <screen x="0" y="0" width="2048" height="1112" />
-    </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="2027" height="376" key="GridCell.Tab.1.left" timestamp="1613192565064">
-      <screen x="0" y="0" width="2048" height="1112" />
-    </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
-    <state width="2027" height="376" key="GridCell.Tab.1.right" timestamp="1613192565064">
-      <screen x="0" y="0" width="2048" height="1112" />
-    </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613192565064" />
+    <state x="835" y="259" key="RollbackChangesDialog/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613235644085" />
     <state x="533" y="201" key="SettingsEditor" timestamp="1611856287797">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>

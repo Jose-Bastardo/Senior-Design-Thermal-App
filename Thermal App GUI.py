@@ -1,23 +1,22 @@
-import kivy
+from kivy.graphics import *
 import mariadb
 import numpy as np
 from kivy.clock import Clock
+from kivy.graphics.context_instructions import Color
 from kivy.graphics.texture import Texture
+from kivy.uix.button import Button
+from kivy.uix.camera import Camera
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
-from kivy.uix.scatterlayout import ScatterLayout
-
+from kivy.uix.label import Label
 import dbfunctions
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.config import Config
 from kivy.core.window import Window
 import time
 import random
 from datetime import datetime
 import sys
-import face_recognition
 import pickle
 import os
 from os import path
@@ -29,24 +28,69 @@ import face_recognition
 Window.fullscreen = True
 
 Builder.load_string('''
-<Main>:
-    Button:
-        id: capturebutton
-        text: 'Capture'
-        size_hint: (.7, .1)
-        on_press: root.capture()
-        pos_hint: {'center_x': .5, 'y': .1}
-    Button:
-        id: comparebutton
-        text: 'Compare'
-        size_hint: (.7, .1)
-        pos_hint: {'center_x': .5, 'y': 0}
-        on_press: root.compare()
+
+
 ''')
 
 
-class Main(FloatLayout):
-    def capture(self):
+class KivyCamera(Image):
+    def __init__(self, capture, fps, **kwargs):
+        super(KivyCamera, self).__init__(**kwargs)
+        self.capture = capture
+        Clock.schedule_interval(self.update, 1.0 / fps)
+
+
+    def update(self, dt):
+        ret, frame = self.capture.read()
+        if ret:
+            # convert it to texture
+            buf1 = cv2.flip(frame, 0)
+            buf = buf1.tobytes()
+            image_texture = Texture.create(
+                size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            # display image from the texture
+            self.texture = image_texture
+
+
+class layout(FloatLayout):
+    def __init__(self, **kwargs):
+        # make sure we aren't overriding any important functionality
+        super(layout, self).__init__(**kwargs)
+        self.capture = cv2.VideoCapture(0)
+        self.my_camera = KivyCamera(capture=self.capture, fps=30)
+        self.add_widget(self.my_camera)
+
+        capturebutton = Button(text="Capture",
+                               size_hint=(.7, .1),
+                               # on_press=self.capturebtn(),
+                               pos_hint={'center_x': .5, 'y': .1},
+                               )
+        comparebutton = Button(text="Compare",
+                               size_hint=(.7, .1),
+                               # on_press=self.comparebtn(),
+                               pos_hint={'center_x': .5, 'y': 0},
+                               )
+        self.successtb = Label(text="[color=ffffff]Success[/color]",
+                               pos_hint={"center_x": .5},
+                               markup=True,
+                               )
+        self.failtb = Label(text="[color=ffffff]Fail[/color]",
+                            pos_hint={"center_x": .5},
+                            markup=True,
+                            )
+
+        self.add_widget(capturebutton)
+        self.add_widget(comparebutton)
+
+        capturebutton.bind(on_press=lambda x: self.capturebtn(None))
+        comparebutton.bind(on_press=lambda x: self.comparebtn(None))
+
+    def on_stop(self):
+        # without this, app will not exit even if the window is closed
+        self.capture.release()
+
+    def capturebtn(self, *args):
         '''
         Function to capture the images and give them the names
         according to their captured time and date.
@@ -57,9 +101,9 @@ class Main(FloatLayout):
         print("\n\n========================================================================================")
         print("----------------------------------------------------------------------------------------")
 
-        camera = self.ids['camera']
         timestr = time.strftime("%Y%m%d_%H%M%S")
-        camera.export_to_png("Face_Recognition/images/IMG_{}.png".format(timestr))
+        ret, frame = self.capture.read()
+        cv2.imwrite("Face_Recognition/images/IMG_{}.png".format(timestr), frame)
         print("Captured")
 
         uploadedImageLoc = 'Face_Recognition/images/'
@@ -125,20 +169,29 @@ class Main(FloatLayout):
                         os.remove(uploadedImageLoc + imageFile)
                         # Send number to the hotel database
                         # OR, do this after booking
+                        dbfunctions.insertfacedb(27, datFolderLoc + datFileName + datExtension)
+                        os.remove(datFolderLoc + datFileName + datExtension)
 
                 else:
                     print("Image doesn't exist! Terminating program....")
-                    print("========================================================================================")
+                    print(
+                        "========================================================================================")
                     sys.exit()
             print("SUCCESS: Patterns extraction completed. Terminiating program.")
             print("========================================================================================")
 
-    def compare(self):
+    def comparebtn(self, *args):
+
+        def randomNum(n):
+            min = pow(10, n - 1)
+            max = pow(10, n) - 1
+            return random.randint(min, max)
+
         datFolderLoc = 'Face_Recognition/extract/'
 
-        logFile = open("log.txt", "a")
-        sys.stdout = logFile
-        print("\n\n========================================================================================")
+        # logFile = open("log.txt", "a")
+        # sys.stdout = logFile
+        print("\n\n=======================================================================================")
         print("----------------------------------------------------------------------------------------")
         print("Running webcam_comparision.py")
         # Print out date and time of code execution
@@ -146,7 +199,7 @@ class Main(FloatLayout):
         print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
         print("----------------------------------------------------------------------------------------")
 
-        #cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # camera port 0
+        cap = self.capture
 
         detector = dlib.get_frontal_face_detector()
         predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -178,8 +231,8 @@ class Main(FloatLayout):
         timeStart = False
 
         while True:
-            frame = self.capture.read()
-            gray = cv2.cvtColor(np.float32(frame), cv2.COLOR_BGR2GRAY)  # for gray images(lightweight)
+            _, frame = cap.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # for gray images(lightweight)
             faces = detector(gray)
             for face in faces:
                 # x, y = face.left(), face.top()
@@ -201,9 +254,7 @@ class Main(FloatLayout):
 
                 # cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-            cv2.imshow("Frame", frame)
-
-            key = cv2.waitKey(5)
+            #key = cv2.waitKey(5)
             if TOTAL >= 2:
                 if (timeStart == False):
                     startTime = time.time()
@@ -214,16 +265,6 @@ class Main(FloatLayout):
                     camImg = "Test.jpg"
                     cv2.imwrite(camImg, frame)
                     break
-
-            # debug: press space to exit webcam
-            if key % 256 == 32:
-                # camImg = "Test.jpg"
-                # cv2.imwrite(camImg, frame)
-                cap.release()
-                cv2.destroyAllWindows()
-                print("Debug space pressed. Terminating program.")
-                print("========================================================================================")
-                sys.exit()
 
         # Search for patterns from webcam image
         unknown_image = face_recognition.load_image_file(camImg)
@@ -239,59 +280,50 @@ class Main(FloatLayout):
         print("Face found. Beginning comparision check....")
         # For loop to compare patterns from webcam with .dat files
         # If comparison returns true, break from for loop
-        personFound = False;
-        for dataFile in os.listdir(datFolderLoc):
-            with open(datFolderLoc + dataFile, 'rb') as f:
+        personFound = False
+        data = dbfunctions.returnallfaces()
+        for d in data:
+            randnum = str(randomNum(20))
+            dataFile = datFolderLoc + randnum + ".dat"
+            s = open(dataFile, 'wb')
+            s.write(d[1])
+            s.close()
+            with open(dataFile, 'rb') as f:
                 known_faces = pickle.load(f)
 
             results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
             if (results[0] == True):
                 personFound = True
                 break
+            else:
+                os.remove(dataFile)
 
         # Prints results
         if (personFound == True):
-            print("SUCCESS:", dataFile, "has a face that matches the person in", camImg)
+            self.add_widget(self.successtb)
+            print("SUCCESS: ", dataFile, " has a face that matches the person in", camImg)
             # Destroy webcam image and respective .dat file
-            print("Deleting", dataFile, "and", camImg, "from system before terminating program.")
+            print("Deleting ", dataFile, " and ", camImg, "from system before terminating program.")
             print("========================================================================================")
             os.remove(camImg)
-            os.remove(datFolderLoc + dataFile)
+            os.remove(dataFile)
 
         else:
+            self.add_widget(self.failtb)
             print("FAILURE:", "All available .dat files don't have any face that matches with the person found in",
                   camImg)
             print("Deleting", camImg, "from system before terminating program.")
             # Deletes webcam image
             os.remove(camImg)
             print("========================================================================================")
-            sys.exit()
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 class CamApp(App):
-
+    @property
     def build(self):
-        self.img1=Image()
-        layout = FloatLayout()
-        layout.add_widget(self.img1)
-        layout.add_widget(Main())
-        #opencv2 stuffs
-        self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        Clock.schedule_interval(self.update, 1.0/33.0)
         return layout
 
-    def update(self, dt):
-        # display image from cam in opencv window
-        ret, frame = self.capture.read()
-        # convert it to texture
-        buf1 = cv2.flip(frame, 0)
-        buf = buf1.tostring()
-        texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-        #if working on RASPBERRY PI, use colorfmt='rgba' here instead, but stick with "bgr" in blit_buffer.
-        texture1.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-        # display image from the texture
-        self.img1.texture = texture1
 
 if __name__ == '__main__':
     CamApp().run()

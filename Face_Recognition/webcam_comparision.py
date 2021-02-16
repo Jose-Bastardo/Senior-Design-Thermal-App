@@ -9,21 +9,29 @@
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 import cv2 #Import OpenCV library for camera displays
 import os #Used to destroy image near the end
-import pickle #Used to save face encoding 
+import pickle #Used to save face encoding
 import face_recognition #Used to access various facial recognition libaries and functions
 import sys #Used for sys.exit()
 from datetime import datetime #Used to print date on log.txt
 import dlib
 from math import hypot
 import time
+import random
+from dbfunctions import returnallfaces
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+def randomNum(n):
+    min = pow(10, n-1)
+    max = pow(10, n) - 1
+    return random.randint(min, max)
+
 datFolderLoc = 'extract/'
 
 #logFile = open("log.txt", "a")
 #sys.stdout = logFile
-print("\n\n========================================================================================")
+print("\n\n=======================================================================================")
 print("----------------------------------------------------------------------------------------")
 print("Running webcam_comparision.py")
 #Print out date and time of code execution
@@ -127,23 +135,31 @@ print("Face found. Beginning comparision check....")
 #For loop to compare patterns from webcam with .dat files
 #If comparison returns true, break from for loop
 personFound = False;
-for dataFile in os.listdir(datFolderLoc):
-    with open(datFolderLoc + dataFile, 'rb') as f:
+data = returnallfaces()
+for d in data:
+    randnum = str(randomNum(20))
+    dataFile = datFolderLoc + randnum + ".dat"
+    s = open(dataFile, 'wb')
+    s.write(d[1])
+    s.close()
+    with open(dataFile, 'rb') as f:
         known_faces = pickle.load(f)
-        
+
     results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
-    if(results[0] == True):
+    if (results[0] == True):
         personFound = True
         break
-    
+    else:
+        os.remove(dataFile)
+
 #Prints results
 if(personFound == True):
-    print("SUCCESS:", dataFile, "has a face that matches the person in", camImg)
+    print("SUCCESS: ", dataFile," has a face that matches the person in", camImg)
     #Destroy webcam image and respective .dat file
-    print("Deleting", dataFile, "and", camImg, "from system before terminating program.")
+    print("Deleting ", dataFile, " and ", camImg, "from system before terminating program.")
     print("========================================================================================")
     os.remove(camImg)
-    os.remove(datFolderLoc + dataFile)
+    os.remove(dataFile)
     
 else:
     print("FAILURE:", "All available .dat files don't have any face that matches with the person found in", camImg)
@@ -153,9 +169,3 @@ else:
     print("========================================================================================")
     sys.exit()
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-k = cv2.waitKey(20000)
-
-if k == 27:
-    cap.release()
-    cv2.destroyAllWindows()

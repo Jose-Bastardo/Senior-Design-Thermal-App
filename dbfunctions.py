@@ -63,9 +63,11 @@ def returnface(datid):
     cursor = connection.cursor()
 
     cursor.execute("Select datfile from dat "
-                   "where datid = " + datid)
+                   "where userid = '" + str(datid) + "'")
 
     dat = cursor.fetchone()
+    if dat == None:
+        return
 
     cursor.close()
     connection.close()
@@ -111,6 +113,23 @@ def printuser(userid):
 
     cursor.close()
     connection.close()
+
+def searchuser(userid):
+    # Establish connection to database
+    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
+                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT userid, firstname, lastname, email, password FROM user "
+                   "where userid = " + str(userid))
+
+    # print data
+    userdata = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    return userdata
 
 
 def newscanhist(userid, temp, passed):

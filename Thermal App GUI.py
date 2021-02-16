@@ -156,7 +156,6 @@ class layout(FloatLayout):
                         print(
                             "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
                         sys.stdout.close()
-                        sys.exit()
 
                     known_faces = [
                         known_face_encoding
@@ -168,7 +167,6 @@ class layout(FloatLayout):
                     if (fileLength <= 0):
                         print("ERROR! File naming failed! Terminating program....")
                         sys.stdout.close()
-                        sys.exit()
 
                     else:
                         # Generate a random 20 number code for reservation ID
@@ -179,14 +177,13 @@ class layout(FloatLayout):
                         os.remove(uploadedImageLoc + imageFile)
                         # Send number to the hotel database
                         # OR, do this after booking
-                        dbfunctions.insertfacedb(27, datFolderLoc + datFileName + datExtension)
-                        os.remove(datFolderLoc + datFileName + datExtension)
+                        dbfunctions.insertfacedb(31, datFolderLoc + datFileName + datExtension)
+                        #os.remove(datFolderLoc + datFileName + datExtension)
 
                 else:
                     print("Image doesn't exist! Terminating program....")
                     print(
                         "========================================================================================")
-                    sys.exit()
             print("SUCCESS: Patterns extraction completed. Terminiating program.")
             print("========================================================================================")
 

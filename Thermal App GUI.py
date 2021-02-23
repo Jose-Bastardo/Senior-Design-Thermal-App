@@ -1,9 +1,12 @@
+import threading
+
 from kivy.graphics import *
 import mariadb
 import numpy as np
 from kivy.clock import Clock
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.texture import Texture
+from kivy.properties import partial
 from kivy.uix.button import Button
 from kivy.uix.camera import Camera
 from kivy.uix.floatlayout import FloatLayout
@@ -25,7 +28,11 @@ import dlib
 from math import hypot
 import face_recognition
 
+<<<<<<< Updated upstream
 Window.fullscreen = True
+=======
+Window.fullscreen = 'fake'
+>>>>>>> Stashed changes
 
 Builder.load_string('''
 
@@ -37,11 +44,106 @@ class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
-        Clock.schedule_interval(self.update, 1.0 / fps)
+        cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
+<<<<<<< Updated upstream
 
     def update(self, dt):
         ret, frame = self.capture.read()
+=======
+        # Create the haar cascade
+        faceCascade = cv2.CascadeClassifier(cascPath)
+
+        #Clock.schedule_interval(self.update, 1.0 / fps)
+        self.successtb = Label(text="[color=ffffff]Success[/color]",
+                               pos_hint={"center_x": .5},
+                               markup=True,
+                               )
+        self.failtb = Label(text="[color=ffffff]Fail[/color]",
+                            pos_hint={"center_x": .5},
+                            markup=True,
+                            )
+        Clock.schedule_interval(partial(self.facialrecognition, faceCascade), 1.0 / fps)
+
+    def resetfail(self):
+        self.remove_widget(self.failtb)
+
+    def resetsuccess(self):
+        self.remove_widget(self.successtb)
+
+    def facialrecognition(self, faceCascade, *args):
+
+        cap = self.capture
+
+        def randomNum(n):
+            min = pow(10, n - 1)
+            max = pow(10, n) - 1
+            return random.randint(min, max)
+
+        datFolderLoc = 'Face_Recognition/extract/'
+
+        # logFile = open("log.txt", "a")
+        # sys.stdout = logFile
+        print("\n\n=======================================================================================")
+        print("----------------------------------------------------------------------------------------")
+        print("Running webcam_comparision.py")
+        # Print out date and time of code execution
+        todayDate = datetime.now()
+        print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
+        print("----------------------------------------------------------------------------------------")
+
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+        _, frame = cap.read()
+
+
+
+        # Read the image
+        image = frame
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Detect faces in the image
+        faces = faceCascade.detectMultiScale(
+            gray,
+            scaleFactor=1.2,
+            minNeighbors=5,
+            minSize=(30, 30),
+            flags=cv2.CASCADE_SCALE_IMAGE
+        )
+
+        if len(faces) is not 0:
+            print("Found {0} faces!".format(len(faces)))
+
+            # Draw a rectangle around the faces
+            for (x, y, w, h) in faces:
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            print("Face found. Beginning comparision check....")
+            # For loop to compare patterns from webcam with .dat files
+            # If comparison returns true, break from for loop
+
+            # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        else:
+            print(
+                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            print("========================================================================================")
+
+        self.update(_, image)
+
+    def update(self, ret, frame):
+        #ret, frame = self.capture.read()
+
+        if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
+            scale_percent = Window.width/frame.shape[1]
+        else:
+            scale_percent = Window.height / frame.shape[0]
+
+        width = int(frame.shape[1] * scale_percent)
+        height = int(frame.shape[0] * scale_percent)
+        dim = (width, height)
+        resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+>>>>>>> Stashed changes
         if ret:
             # convert it to texture
             buf1 = cv2.flip(frame, 0)
@@ -80,8 +182,20 @@ class layout(FloatLayout):
                             markup=True,
                             )
 
+<<<<<<< Updated upstream
         self.add_widget(capturebutton)
         self.add_widget(comparebutton)
+=======
+        self.add_widget(self.capturebutton)
+        self.add_widget(self.comparebutton)
+
+        self.capturebutton.bind(on_press=lambda x: self.capturebtn(None))
+        #self.comparebutton.bind(on_press=lambda x: self.facialrecognition(None))
+        self.comparebutton.bind(on_press=lambda x: self.loop(None))
+
+    def loop(self, *args):
+        time.sleep(20)
+>>>>>>> Stashed changes
 
         capturebutton.bind(on_press=lambda x: self.capturebtn(None))
         comparebutton.bind(on_press=lambda x: self.comparebtn(None))
@@ -127,7 +241,6 @@ class layout(FloatLayout):
         # Check if upload folder directory is valid
         if (path.exists(uploadedImageLoc) == False):
             print('Folder path does not exists. Terminating program....')
-            sys.exit()
 
         else:
             # For loop to read images on uploadedImages folder
@@ -180,8 +293,19 @@ class layout(FloatLayout):
             print("SUCCESS: Patterns extraction completed. Terminiating program.")
             print("========================================================================================")
 
-    def comparebtn(self, *args):
+    def comparebtn(self):
+        threading.Thread(target=self.facialrecognition).start()
 
+    def facialrecognition(self, *args):
+
+<<<<<<< Updated upstream
+=======
+        self.comparebutton.disabled = True
+        self.capturebutton.disabled = True
+
+        cap = self.capture
+
+>>>>>>> Stashed changes
         def randomNum(n):
             min = pow(10, n - 1)
             max = pow(10, n) - 1
@@ -198,8 +322,6 @@ class layout(FloatLayout):
         todayDate = datetime.now()
         print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
         print("----------------------------------------------------------------------------------------")
-
-        cap = self.capture
 
         detector = dlib.get_frontal_face_detector()
         predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -235,9 +357,9 @@ class layout(FloatLayout):
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # for gray images(lightweight)
             faces = detector(gray)
             for face in faces:
-                # x, y = face.left(), face.top()
-                # x1, y1 = face.right(), face.bottom()
-                # cv2.rectangle(frame, (x,y), (x1,y1), (0,255,0), 3 )# green box, thickness of box
+                x, y = face.left(), face.top()
+                x1, y1 = face.right(), face.bottom()
+                cv2.rectangle(frame, (x,y), (x1,y1), (0,255,0), 3 )# green box, thickness of box
                 landmarks = predictor(gray, face)
                 left_eye_ratio, _ = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
                 right_eye_ratio, myVerti = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
@@ -275,7 +397,6 @@ class layout(FloatLayout):
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
             os.remove(camImg)
             print("========================================================================================")
-            sys.exit()
 
         print("Face found. Beginning comparision check....")
         # For loop to compare patterns from webcam with .dat files

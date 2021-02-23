@@ -20,6 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2fe43b5-9003-4b5e-880f-ca7c15ea2b55" name="Default Changelist" comment="">
+<<<<<<< Updated upstream
       <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/39879158905873969238.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/66106137263061984782.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/46908922600157086774.dat" afterDir="false" />
@@ -53,6 +54,14 @@
       <change beforePath="$PROJECT_DIR$/Face_Recognition/extract/88601444560868772700.dat" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Face_Recognition/extract/97603614211776283801.dat" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" beforeDir="false" afterPath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" afterDir="false" />
+=======
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/29738259503221168350.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/37434955107754456840.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/62851704353201942317.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/95526546883035837973.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Face_Recognition/haarcascade_frontalface_default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+>>>>>>> Stashed changes
       <change beforePath="$PROJECT_DIR$/Thermal App GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Thermal App GUI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dbfunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbfunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dbfunctions_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbfunctions_test.py" afterDir="false" />
@@ -88,15 +97,16 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Face_Recognition" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\Github\Senior-Design-Thermal-App" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Github\Senior-Design-Thermal-App\Face_Recognition" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Github\Senior-Design-Thermal-App\Face_Recognition" />
+      <recent name="D:\Github\Senior-Design-Thermal-App" />
     </key>
   </component>
   <component name="RunManager" selected="Python.Thermal App GUI">
@@ -270,6 +280,7 @@
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state x="805" y="311" key="FileChooserDialogImpl/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857278153" />
+<<<<<<< Updated upstream
     <state width="1899" height="272" key="GridCell.Tab.0.bottom" timestamp="1613440074890">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -289,23 +300,44 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="2027" height="376" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+=======
+    <state width="2027" height="294" key="GridCell.Tab.0.bottom" timestamp="1614097545686">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="294" key="GridCell.Tab.0.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1614097545686" />
+    <state width="1899" height="272" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="2027" height="294" key="GridCell.Tab.0.center" timestamp="1614097545686">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="294" key="GridCell.Tab.0.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1614097545686" />
+    <state width="1899" height="272" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="2027" height="294" key="GridCell.Tab.0.left" timestamp="1614097545686">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="294" key="GridCell.Tab.0.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1614097545686" />
+    <state width="1899" height="272" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
+    <state width="2027" height="294" key="GridCell.Tab.0.right" timestamp="1614097545686">
+      <screen x="0" y="0" width="2048" height="1112" />
+    </state>
+    <state width="2027" height="294" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1614097545686" />
+>>>>>>> Stashed changes
     <state width="1899" height="272" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
-    <state width="2027" height="376" key="GridCell.Tab.1.bottom" timestamp="1613247581900">
+    <state width="2027" height="376" key="GridCell.Tab.1.bottom" timestamp="1613778700415">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
-    <state width="2027" height="376" key="GridCell.Tab.1.center" timestamp="1613247581900">
+    <state width="2027" height="376" key="GridCell.Tab.1.bottom/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613778700415" />
+    <state width="2027" height="376" key="GridCell.Tab.1.center" timestamp="1613778700415">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
-    <state width="2027" height="376" key="GridCell.Tab.1.left" timestamp="1613247581900">
+    <state width="2027" height="376" key="GridCell.Tab.1.center/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613778700415" />
+    <state width="2027" height="376" key="GridCell.Tab.1.left" timestamp="1613778700415">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
-    <state width="2027" height="376" key="GridCell.Tab.1.right" timestamp="1613247581900">
+    <state width="2027" height="376" key="GridCell.Tab.1.left/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613778700415" />
+    <state width="2027" height="376" key="GridCell.Tab.1.right" timestamp="1613778700415">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
-    <state width="2027" height="376" key="GridCell.Tab.1.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
+    <state width="2027" height="376" key="GridCell.Tab.1.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613778700415" />
     <state x="835" y="259" key="RollbackChangesDialog" timestamp="1613235644085">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>

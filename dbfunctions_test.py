@@ -4,7 +4,7 @@ import dbfunctions
 
 dbfunctions.deletedb()
 
-userid = dbfunctions.newuser("luke", "smith", "testemail122@gmail.com", "password")
+userid = dbfunctions.newuser("john", "smith", "testemail122@gmail.com", "password")
 dbfunctions.printuser(userid)
 
 dbfunctions.insertfacedb(userid, "Face_Recognition/dat/47245376683007053545.dat")

@@ -28,11 +28,7 @@ import dlib
 from math import hypot
 import face_recognition
 
-<<<<<<< Updated upstream
-Window.fullscreen = True
-=======
 Window.fullscreen = 'fake'
->>>>>>> Stashed changes
 
 Builder.load_string('''
 
@@ -46,11 +42,6 @@ class KivyCamera(Image):
         self.capture = capture
         cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
-<<<<<<< Updated upstream
-
-    def update(self, dt):
-        ret, frame = self.capture.read()
-=======
         # Create the haar cascade
         faceCascade = cv2.CascadeClassifier(cascPath)
 
@@ -143,13 +134,14 @@ class KivyCamera(Image):
         dim = (width, height)
         resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
->>>>>>> Stashed changes
         if ret:
             # convert it to texture
-            buf1 = cv2.flip(frame, 0)
+            buf1 = cv2.flip(resized, 0)
             buf = buf1.tobytes()
             image_texture = Texture.create(
-                size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                #size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
+
             image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
             # display image from the texture
             self.texture = image_texture
@@ -160,19 +152,19 @@ class layout(FloatLayout):
         # make sure we aren't overriding any important functionality
         super(layout, self).__init__(**kwargs)
         self.capture = cv2.VideoCapture(0)
-        self.my_camera = KivyCamera(capture=self.capture, fps=30)
+        self.my_camera = KivyCamera(capture=self.capture, fps=30, size=Window.size)
         self.add_widget(self.my_camera)
 
-        capturebutton = Button(text="Capture",
-                               size_hint=(.7, .1),
-                               # on_press=self.capturebtn(),
-                               pos_hint={'center_x': .5, 'y': .1},
-                               )
-        comparebutton = Button(text="Compare",
-                               size_hint=(.7, .1),
-                               # on_press=self.comparebtn(),
-                               pos_hint={'center_x': .5, 'y': 0},
-                               )
+        self.capturebutton = Button(text="Capture",
+                                    size_hint=(.7, .1),
+                                    # on_press=self.capturebtn(),
+                                    pos_hint={'center_x': .5, 'y': .1},
+                                    )
+        self.comparebutton = Button(text="Compare",
+                                    size_hint=(.7, .1),
+                                    # on_press=self.comparebtn(),
+                                    pos_hint={'center_x': .5, 'y': 0},
+                                    )
         self.successtb = Label(text="[color=ffffff]Success[/color]",
                                pos_hint={"center_x": .5},
                                markup=True,
@@ -182,10 +174,6 @@ class layout(FloatLayout):
                             markup=True,
                             )
 
-<<<<<<< Updated upstream
-        self.add_widget(capturebutton)
-        self.add_widget(comparebutton)
-=======
         self.add_widget(self.capturebutton)
         self.add_widget(self.comparebutton)
 
@@ -195,10 +183,16 @@ class layout(FloatLayout):
 
     def loop(self, *args):
         time.sleep(20)
->>>>>>> Stashed changes
 
-        capturebutton.bind(on_press=lambda x: self.capturebtn(None))
-        comparebutton.bind(on_press=lambda x: self.comparebtn(None))
+    def resetfail(self):
+        self.remove_widget(self.failtb)
+        self.comparebutton.disabled = False
+        self.capturebutton.disabled = False
+
+    def resetsuccess(self):
+        self.remove_widget(self.successtb)
+        self.comparebutton.disabled = False
+        self.capturebutton.disabled = False
 
     def on_stop(self):
         # without this, app will not exit even if the window is closed
@@ -259,7 +253,6 @@ class layout(FloatLayout):
                         print(
                             "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
                         sys.stdout.close()
-                        sys.exit()
 
                     known_faces = [
                         known_face_encoding
@@ -271,7 +264,6 @@ class layout(FloatLayout):
                     if (fileLength <= 0):
                         print("ERROR! File naming failed! Terminating program....")
                         sys.stdout.close()
-                        sys.exit()
 
                     else:
                         # Generate a random 20 number code for reservation ID
@@ -282,14 +274,13 @@ class layout(FloatLayout):
                         os.remove(uploadedImageLoc + imageFile)
                         # Send number to the hotel database
                         # OR, do this after booking
-                        dbfunctions.insertfacedb(27, datFolderLoc + datFileName + datExtension)
-                        os.remove(datFolderLoc + datFileName + datExtension)
+                        dbfunctions.insertfacedb(31, datFolderLoc + datFileName + datExtension)
+                        # os.remove(datFolderLoc + datFileName + datExtension)
 
                 else:
                     print("Image doesn't exist! Terminating program....")
                     print(
                         "========================================================================================")
-                    sys.exit()
             print("SUCCESS: Patterns extraction completed. Terminiating program.")
             print("========================================================================================")
 
@@ -298,14 +289,11 @@ class layout(FloatLayout):
 
     def facialrecognition(self, *args):
 
-<<<<<<< Updated upstream
-=======
         self.comparebutton.disabled = True
         self.capturebutton.disabled = True
 
         cap = self.capture
 
->>>>>>> Stashed changes
         def randomNum(n):
             min = pow(10, n - 1)
             max = pow(10, n) - 1
@@ -376,7 +364,7 @@ class layout(FloatLayout):
 
                 # cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-            #key = cv2.waitKey(5)
+            # key = cv2.waitKey(5)
             if TOTAL >= 2:
                 if (timeStart == False):
                     startTime = time.time()
@@ -428,6 +416,7 @@ class layout(FloatLayout):
             print("========================================================================================")
             os.remove(camImg)
             os.remove(dataFile)
+            Clock.schedule_once(lambda dt: self.resetsuccess(), 10)
 
         else:
             self.add_widget(self.failtb)
@@ -436,6 +425,7 @@ class layout(FloatLayout):
             print("Deleting", camImg, "from system before terminating program.")
             # Deletes webcam image
             os.remove(camImg)
+            Clock.schedule_once(lambda dt: self.resetfail(), 10)
             print("========================================================================================")
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

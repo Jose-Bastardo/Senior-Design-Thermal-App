@@ -21,6 +21,7 @@
   <component name="ChangeListManager">
     <list default="true" id="d2fe43b5-9003-4b5e-880f-ca7c15ea2b55" name="Default Changelist" comment="">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/39879158905873969238.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/dat/66106137263061984782.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/46908922600157086774.dat" afterDir="false" />
@@ -55,12 +56,17 @@
       <change beforePath="$PROJECT_DIR$/Face_Recognition/extract/97603614211776283801.dat" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" beforeDir="false" afterPath="$PROJECT_DIR$/Face_Recognition/webcam_comparision.py" afterDir="false" />
 =======
+=======
+>>>>>>> Stashed changes
       <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/29738259503221168350.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/37434955107754456840.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/62851704353201942317.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/extract/95526546883035837973.dat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Face_Recognition/haarcascade_frontalface_default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       <change beforePath="$PROJECT_DIR$/Thermal App GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Thermal App GUI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dbfunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbfunctions.py" afterDir="false" />
@@ -281,6 +287,7 @@
     </state>
     <state x="805" y="311" key="FileChooserDialogImpl/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1611857278153" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <state width="1899" height="272" key="GridCell.Tab.0.bottom" timestamp="1613440074890">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -301,6 +308,8 @@
     </state>
     <state width="2027" height="376" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1613247581900" />
 =======
+=======
+>>>>>>> Stashed changes
     <state width="2027" height="294" key="GridCell.Tab.0.bottom" timestamp="1614097545686">
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
@@ -320,6 +329,9 @@
       <screen x="0" y="0" width="2048" height="1112" />
     </state>
     <state width="2027" height="294" key="GridCell.Tab.0.right/-1920.349.1920.1030/0.0.2048.1112@0.0.2048.1112" timestamp="1614097545686" />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <state width="1899" height="272" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1613440074890" />
     <state width="2027" height="376" key="GridCell.Tab.1.bottom" timestamp="1613778700415">

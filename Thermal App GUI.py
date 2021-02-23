@@ -25,7 +25,9 @@ import dlib
 from math import hypot
 import face_recognition
 
-Window.fullscreen = 'auto'
+Window.fullscreen = 'fake'
+
+userid = None
 
 Builder.load_string('''
 
@@ -91,6 +93,10 @@ class layout(FloatLayout):
                             pos_hint={"center_x": .5},
                             markup=True,
                             )
+        self.captureS = Label(text="[color=ffffff]Capture Successful[/color]",
+                            pos_hint={"center_x": .5},
+                            markup=True,
+                            )
 
         self.add_widget(self.capturebutton)
         self.add_widget(self.comparebutton)
@@ -118,17 +124,17 @@ class layout(FloatLayout):
         according to their captured time and date.
         '''
 
-        logFile = open("log.txt", "a")
-        sys.stdout = logFile
+        #logFile = open("log.txt", "a")
+        #sys.stdout = logFile
         print("\n\n========================================================================================")
         print("----------------------------------------------------------------------------------------")
 
         timestr = time.strftime("%Y%m%d_%H%M%S")
         ret, frame = self.capture.read()
-        cv2.imwrite("Face_Recognition/images/IMG_{}.png".format(timestr), frame)
+        cv2.imwrite("Face_Recognition/scan_compare/IMG_{}.png".format(timestr), frame)
         print("Captured")
 
-        uploadedImageLoc = 'Face_Recognition/images/'
+        uploadedImageLoc = 'Face_Recognition/scan_compare/'
         datFolderLoc = 'Face_Recognition/dat/'
 
         # Create random number based on specified length of n
@@ -149,7 +155,7 @@ class layout(FloatLayout):
         # Check if upload folder directory is valid
         if (path.exists(uploadedImageLoc) == False):
             print('Folder path does not exists. Terminating program....')
-            sys.exit()
+            print('Folder path does not exists. Terminating program....')
 
         else:
             # For loop to read images on uploadedImages folder
@@ -167,7 +173,7 @@ class layout(FloatLayout):
                     except IndexError:
                         print(
                             "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
-                        sys.stdout.close()
+                        return
 
                     known_faces = [
                         known_face_encoding
@@ -178,7 +184,6 @@ class layout(FloatLayout):
                     datExtension = ".dat"
                     if (fileLength <= 0):
                         print("ERROR! File naming failed! Terminating program....")
-                        sys.stdout.close()
 
                     else:
                         # Generate a random 20 number code for reservation ID
@@ -189,7 +194,7 @@ class layout(FloatLayout):
                         os.remove(uploadedImageLoc + imageFile)
                         # Send number to the hotel database
                         # OR, do this after booking
-                        dbfunctions.insertfacedb(31, datFolderLoc + datFileName + datExtension)
+                        dbfunctions.insertfacedb(userid, datFolderLoc + datFileName + datExtension)
                         # os.remove(datFolderLoc + datFileName + datExtension)
 
                 else:
@@ -297,7 +302,7 @@ class layout(FloatLayout):
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
             os.remove(camImg)
             print("========================================================================================")
-            sys.exit()
+            return
 
         print("Face found. Beginning comparision check....")
         # For loop to compare patterns from webcam with .dat files
@@ -314,7 +319,7 @@ class layout(FloatLayout):
                 known_faces = pickle.load(f)
 
             results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
-            if (results[0] == True):
+            if results[0] == True:
                 personFound = True
                 break
             else:
@@ -346,6 +351,8 @@ class layout(FloatLayout):
 class CamApp(App):
     @property
     def build(self):
+        dbfunctions.deletedb()
+        userid = dbfunctions.newuser("john", "smith", "testemail122@gmail.com", "password")
         return layout
 
 

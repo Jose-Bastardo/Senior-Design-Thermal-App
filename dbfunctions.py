@@ -13,6 +13,7 @@ def deletedb():
     connection.commit()
     connection.close()
 
+
 # Insert new user into database
 def newuser(firstname, lastname, email, password):
     # Establish connection to database
@@ -61,11 +62,12 @@ def insertfacedb(userid, file):
     dat = open(file, "rb")
     # Insert new user information
     cursor.execute("INSERT INTO dat(userid, datfile) VALUES (?,?)",
-                       (userid, dat.read()))
+                   (userid, dat.read()))
     connection.commit()
 
     cursor.close()
     connection.close()
+
 
 def returnface(datid):
     # Establish connection to database
@@ -85,6 +87,7 @@ def returnface(datid):
 
     return dat[0]
 
+
 def returnallfaces():
     # Establish connection to database
     connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
@@ -103,6 +106,7 @@ def returnallfaces():
     connection.close()
 
     return data
+
 
 # Print user information
 def printuser(userid):
@@ -124,6 +128,7 @@ def printuser(userid):
 
     cursor.close()
     connection.close()
+
 
 def searchuser(userid):
     # Establish connection to database
@@ -152,7 +157,7 @@ def newscanhist(userid, temp, passed):
     cursor = connection.cursor()
 
     cursor.execute("INSERT INTO history(userid, temp, date, time, passed) VALUES(?,?,STR_TO_DATE(?, '%m/%d/%y'),?,?)",
-                    (userid, temp, x.strftime("%x"), x.strftime("%X"), passed))
+                   (userid, temp, x.strftime("%x"), x.strftime("%X"), passed))
     connection.commit()
 
     cursor.close()

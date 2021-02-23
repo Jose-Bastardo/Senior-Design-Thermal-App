@@ -160,11 +160,6 @@ class layout(FloatLayout):
                                     # on_press=self.capturebtn(),
                                     pos_hint={'center_x': .5, 'y': .1},
                                     )
-        self.comparebutton = Button(text="Compare",
-                                    size_hint=(.7, .1),
-                                    # on_press=self.comparebtn(),
-                                    pos_hint={'center_x': .5, 'y': 0},
-                                    )
         self.successtb = Label(text="[color=ffffff]Success[/color]",
                                pos_hint={"center_x": .5},
                                markup=True,
@@ -175,11 +170,9 @@ class layout(FloatLayout):
                             )
 
         self.add_widget(self.capturebutton)
-        self.add_widget(self.comparebutton)
 
         self.capturebutton.bind(on_press=lambda x: self.capturebtn(None))
         #self.comparebutton.bind(on_press=lambda x: self.facialrecognition(None))
-        self.comparebutton.bind(on_press=lambda x: self.loop(None))
 
     def loop(self, *args):
         time.sleep(20)
@@ -253,6 +246,7 @@ class layout(FloatLayout):
                         print(
                             "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
                         sys.stdout.close()
+                        return
 
                     known_faces = [
                         known_face_encoding

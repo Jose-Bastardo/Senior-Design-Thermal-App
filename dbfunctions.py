@@ -2,6 +2,17 @@ import mariadb
 import datetime
 
 
+def deletedb():
+    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
+                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    cursor = connection.cursor()
+
+    cursor.execute("Delete from history")
+    cursor.execute("Delete from dat")
+    cursor.execute("Delete from user")
+    connection.commit()
+    connection.close()
+
 # Insert new user into database
 def newuser(firstname, lastname, email, password):
     # Establish connection to database

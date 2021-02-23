@@ -2,11 +2,13 @@ import difflib
 import mariadb
 import dbfunctions
 
+dbfunctions.deletedb()
+
 userid = dbfunctions.newuser("luke", "smith", "testemail122@gmail.com", "password")
 dbfunctions.printuser(userid)
 
-dbfunctions.insertfacedb(31, "Face_Recognition/dat/47245376683007053545.dat")
-facedata = dbfunctions.returnface(31)
+dbfunctions.insertfacedb(userid, "Face_Recognition/dat/47245376683007053545.dat")
+facedata = dbfunctions.returnface(userid)
 datbits = open("Face_Recognition/dat/47245376683007053545.dat", "rb")
 
 print(facedata)

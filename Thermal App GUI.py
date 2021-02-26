@@ -28,7 +28,7 @@ import dlib
 from math import hypot
 import face_recognition
 
-Window.fullscreen = 'fake'
+Window.fullscreen = False
 
 Builder.load_string('''
 

@@ -96,9 +96,9 @@ class KivyCamera(Image):
         # Detect faces in the image
         faces = faceCascade.detectMultiScale(
             gray,
-            scaleFactor=1.2,
+            scaleFactor=1.3,
             minNeighbors=5,
-            minSize=(30, 30),
+            minSize=(20, 20),
             flags=cv2.CASCADE_SCALE_IMAGE
         )
 

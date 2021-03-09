@@ -40,6 +40,33 @@ class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
+        self.faces = None
+        self.temp = None
+
+        self.lowtemp = Button(text="Low Temp",
+                                    size_hint=(.7, .1),
+                                    #on_press=self.temppass(),
+                                    pos_hint={'center_x': .5, 'y': .1},
+                                    )
+        self.notemp = Button(text="No Temp",
+                              size_hint=(.7, .1),
+                              # on_press=self.temppass(),
+                              pos_hint={'center_x': .8, 'y': .1},
+                              )
+        self.hightemp = Button(text="High Temp",
+                              size_hint=(.7, .1),
+                              # on_press=self.temppass(),
+                              pos_hint={'center_x': 2, 'y': .1},
+                              )
+
+        self.lowtemp.bind(on_press=lambda x: self.temppass())
+        self.notemp.bind(on_press=lambda x: self.tempnone())
+        self.hightemp.bind(on_press=lambda x: self.tempfail())
+
+        self.add_widget(self.lowtemp)
+        self.add_widget(self.notemp)
+        self.add_widget(self.hightemp)
+
         cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
         # Create the haar cascade
@@ -54,7 +81,17 @@ class KivyCamera(Image):
                             pos_hint={"center_x": .5},
                             markup=True,
                             )
-        Clock.schedule_interval(partial(self.facialrecognition, faceCascade), 1.0 / fps)
+        Clock.schedule_interval(partial(self.facialrecognition, faceCascade), 10)
+        Clock.schedule_interval(partial(self.update), 1.0 / fps)
+
+    def temppass(self):
+        self.temp = 96
+
+    def tempnone(self):
+            self.temp = None
+
+    def tempfail(self):
+        self.temp = 100
 
     def resetfail(self):
         self.remove_widget(self.failtb)
@@ -106,23 +143,36 @@ class KivyCamera(Image):
             print("Found {0} faces!".format(len(faces)))
 
             # Draw a rectangle around the faces
-            for (x, y, w, h) in faces:
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
 
             print("Face found. Beginning comparision check....")
             # For loop to compare patterns from webcam with .dat files
             # If comparison returns true, break from for loop
 
             # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            self.faces = faces
         else:
             print(
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
             print("========================================================================================")
+            self.faces = None
 
-        self.update(_, image)
 
-    def update(self, ret, frame):
-        #ret, frame = self.capture.read()
+
+    def update(self, *args):
+        ret, frame = self.capture.read()
+
+
+        if self.temp == None:
+            squarecolor = (0, 0, 0)
+        elif self.temp > 98.6:
+            squarecolor = (0, 0, 255)
+        else:
+            squarecolor = (0, 255, 0)
+
+        if self.faces is not None:
+            for (x, y, w, h) in self.faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), squarecolor, 2)
 
         if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
             scale_percent = Window.width/frame.shape[1]
@@ -134,6 +184,7 @@ class KivyCamera(Image):
         dim = (width, height)
         resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
+
         if ret:
             # convert it to texture
             buf1 = cv2.flip(resized, 0)
@@ -143,6 +194,7 @@ class KivyCamera(Image):
                 size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
 
             image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+
             # display image from the texture
             self.texture = image_texture
 

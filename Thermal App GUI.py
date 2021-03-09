@@ -43,30 +43,6 @@ class KivyCamera(Image):
         self.faces = None
         self.temp = None
 
-        self.lowtemp = Button(text="Low Temp",
-                                    size_hint=(.7, .1),
-                                    #on_press=self.temppass(),
-                                    pos_hint={'center_x': .5, 'y': .1},
-                                    )
-        self.notemp = Button(text="No Temp",
-                              size_hint=(.7, .1),
-                              # on_press=self.temppass(),
-                              pos_hint={'center_x': .8, 'y': .1},
-                              )
-        self.hightemp = Button(text="High Temp",
-                              size_hint=(.7, .1),
-                              # on_press=self.temppass(),
-                              pos_hint={'center_x': 2, 'y': .1},
-                              )
-
-        self.lowtemp.bind(on_press=lambda x: self.temppass())
-        self.notemp.bind(on_press=lambda x: self.tempnone())
-        self.hightemp.bind(on_press=lambda x: self.tempfail())
-
-        self.add_widget(self.lowtemp)
-        self.add_widget(self.notemp)
-        self.add_widget(self.hightemp)
-
         cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
         # Create the haar cascade
@@ -81,7 +57,7 @@ class KivyCamera(Image):
                             pos_hint={"center_x": .5},
                             markup=True,
                             )
-        Clock.schedule_interval(partial(self.facialrecognition, faceCascade), 10)
+        Clock.schedule_interval(partial(self.facialrecognition, faceCascade), 4)
         Clock.schedule_interval(partial(self.update), 1.0 / fps)
 
     def temppass(self):
@@ -221,10 +197,32 @@ class layout(FloatLayout):
                             markup=True,
                             )
 
-        self.add_widget(self.capturebutton)
+        self.lowtemp = Button(text="Low Temp",
+                              size_hint=(.2, .1),
+                              # on_press=self.temppass(),
+                              pos_hint={'center_x': .2, 'y': 0},
+                              )
+        self.notemp = Button(text="No Temp",
+                             size_hint=(.2, .1),
+                             # on_press=self.temppass(),
+                             pos_hint={'center_x': .5, 'y': 0},
+                             )
+        self.hightemp = Button(text="High Temp",
+                               size_hint=(.2, .1),
+                               # on_press=self.temppass(),
+                               pos_hint={'center_x': .8, 'y': 0},
+                               )
 
+        self.lowtemp.bind(on_press=lambda x: self.my_camera.temppass())
+        self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
+        self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
         self.capturebutton.bind(on_press=lambda x: self.capturebtn(None))
         #self.comparebutton.bind(on_press=lambda x: self.facialrecognition(None))
+
+        self.add_widget(self.lowtemp)
+        self.add_widget(self.notemp)
+        self.add_widget(self.hightemp)
+        self.add_widget(self.capturebutton)
 
     def loop(self, *args):
         time.sleep(20)

@@ -4,6 +4,7 @@ import numpy as np
 from kivy.clock import Clock
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.texture import Texture
+from kivy.properties import partial
 from kivy.uix.button import Button
 from kivy.uix.camera import Camera
 from kivy.uix.floatlayout import FloatLayout
@@ -39,9 +40,9 @@ class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
-        Clock.schedule_interval(self.update, 1.0 / fps)
+        Clock.schedule_interval(partial(self.update), 1.0 / fps)
 
-    def update(self, dt):
+    def update(self, *args):
         ret, frame = self.capture.read()
 
         if Window.height - frame.shape[0] > Window.width - frame.shape[1]:

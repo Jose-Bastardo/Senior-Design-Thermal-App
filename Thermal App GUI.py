@@ -27,6 +27,7 @@ import cv2
 import dlib
 from math import hypot
 import face_recognition
+import smtplib, ssl
 
 Window.fullscreen = False
 
@@ -35,6 +36,22 @@ Builder.load_string('''
 
 ''')
 
+port = 465  # For SSL
+smtp_server = "smtp.gmail.com"
+sender_email = "notarealemailplsignore@gmail.com"  # Enter your address
+receiver_email = "notarealemailplsignore@gmail.com"  # Enter receiver address
+password = "apesapesapes"
+usermessage = """\
+Subject: Corserva High Temperature Detected
+
+A high temperature has been detected from the Corserva Kiosk. Please speak to nearby attendant from a manual screening."""
+
+adminmessage = """\
+Subject: High Temperature Detected
+
+High Temperature has been detected from user."""
+
+
 
 class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
@@ -42,23 +59,53 @@ class KivyCamera(Image):
         self.capture = capture
         self.faces = None
         self.temp = None
+        self.tlimit = 2 * 60
+        self.timer = self.tlimit
+        self.squarecolor = (0, 0, 0)
+        self.userid = None
+
 
         cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
         # Create the haar cascade
-        faceCascade = cv2.CascadeClassifier(cascPath)
+        self.faceCascade = cv2.CascadeClassifier(cascPath)
 
-        #Clock.schedule_interval(self.update, 1.0 / fps)
-        self.successtb = Label(text="[color=ffffff]Success[/color]",
-                               pos_hint={"center_x": .5},
-                               markup=True,
-                               )
-        self.failtb = Label(text="[color=ffffff]Fail[/color]",
-                            pos_hint={"center_x": .5},
-                            markup=True,
-                            )
-        Clock.schedule_interval(partial(self.facialrecognition, faceCascade), 4)
+        self.facethread = threading.Thread(target=self.facialrecognition, args=(self.faceCascade,))
+
+        #Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
+        Clock.schedule_interval(partial(self.start_facial_recognition), 4)
         Clock.schedule_interval(partial(self.update), 1.0 / fps)
+
+    def start_user_mail_thread(self):
+        threading.Thread(target=self.usersendemail, args=()).start()
+
+    def start_admin_mail_thread(self):
+        threading.Thread(target=self.adminsendemail, args=()).start()
+
+    def start_facial_recognition(self, *args):
+        if self.facethread.is_alive():
+            return
+        else:
+            self.facethread = threading.Thread(target=self.facialrecognition, args=(self.faceCascade,))
+            self.facethread.start()
+
+    def usersendemail(self):
+        # Create a secure SSL context
+        context = ssl.create_default_context()
+
+        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+            server.login(sender_email, password)
+            # TODO: Send email here
+            server.sendmail(sender_email, receiver_email, usermessage)
+
+    def adminsendemail(self):
+        # Create a secure SSL context
+        context = ssl.create_default_context()
+
+        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+            server.login(sender_email, password)
+            # TODO: Send email here
+            server.sendmail(sender_email, receiver_email, adminmessage)
 
     def temppass(self):
         self.temp = 96
@@ -69,13 +116,7 @@ class KivyCamera(Image):
     def tempfail(self):
         self.temp = 100
 
-    def resetfail(self):
-        self.remove_widget(self.failtb)
-
-    def resetsuccess(self):
-        self.remove_widget(self.successtb)
-
-    def facialrecognition(self, faceCascade, *args):
+    def facialrecognition(self, faceCascade):
 
         cap = self.capture
 
@@ -100,8 +141,6 @@ class KivyCamera(Image):
         predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
         _, frame = cap.read()
 
-
-
         # Read the image
         image = frame
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -117,38 +156,108 @@ class KivyCamera(Image):
 
         if len(faces) is not 0:
             print("Found {0} faces!".format(len(faces)))
+            self.faces = faces
 
-            # Draw a rectangle around the faces
-
-
+            self.facecomparison(image)
             print("Face found. Beginning comparision check....")
             # For loop to compare patterns from webcam with .dat files
             # If comparison returns true, break from for loop
 
             # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            self.faces = faces
+
         else:
             print(
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
             print("========================================================================================")
             self.faces = None
 
+    def facecomparison(self, image):
 
+        def randomNum(n):
+            min = pow(10, n - 1)
+            max = pow(10, n) - 1
+            return random.randint(min, max)
+
+        datdir = "Face_Recognition/dat/"
+        imagesdir = "Face_Recognition/scan_compare/"
+
+        """
+        for (x, y, w, h) in self.faces:
+            img = image[y:y+h, x:x+w]
+            randnum = str(randomNum(20))
+            imgdir = imagesdir + randnum
+            cv2.imwrite(imgdir, img)
+            unknown_image = face_recognition.load_image_file(imgdir)
+            try:
+                unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+            except IndexError:
+                print(
+                    "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+                os.remove(imgdir)
+                print("========================================================================================")
+                continue
+        """
+        randnum = str(randomNum(20))
+        imgdir = imagesdir + randnum + ".jpg"
+        cv2.imwrite(imgdir, image)
+        unknown_image = face_recognition.load_image_file(imgdir)
+
+        try:
+            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+        except IndexError:
+            print(
+                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            os.remove(imgdir)
+            print("========================================================================================")
+            return
+
+        personFound = False
+
+        data = dbfunctions.returnallfaces()
+        for d in data:
+            randnum = str(randomNum(20))
+            dataFile = datdir + randnum + ".dat"
+            s = open(dataFile, 'wb')
+            s.write(d[1])
+            s.close()
+            with open(dataFile, 'rb') as f:
+                known_faces = (pickle.load(f))
+
+            results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
+            os.remove(dataFile)
+            if (results[0] == True):
+                personFound = True
+                self.userid = d[0]
+                break
+
+        self.userid = None
 
     def update(self, *args):
         ret, frame = self.capture.read()
 
-
-        if self.temp == None:
-            squarecolor = (0, 0, 0)
-        elif self.temp > 98.6:
-            squarecolor = (0, 0, 255)
+        if self.timer == self.tlimit:
+            if self.temp == None:
+                    self.squarecolor = (0, 0, 0)
+            elif self.temp > 98.6:
+                self.timer = 0
+                self.squarecolor = (0, 0, 255)
+                self.start_user_mail_thread()
+                self.start_admin_mail_thread()
+                self.temp = None
+                if self.userid is not None:
+                    dbfunctions.newscanhist(self.userid, self.temp, False)
+            elif self.temp <= 98.6:
+                self.timer = 0
+                self.squarecolor = (0, 255, 0)
+                self.temp = None
+                if self.userid is not None:
+                    dbfunctions.newscanhist(self.userid, self.temp, False)
         else:
-            squarecolor = (0, 255, 0)
+            self.timer += 1
 
         if self.faces is not None:
             for (x, y, w, h) in self.faces:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), squarecolor, 2)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
 
         if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
             scale_percent = Window.width/frame.shape[1]
@@ -188,14 +297,6 @@ class layout(FloatLayout):
                                     # on_press=self.capturebtn(),
                                     pos_hint={'center_x': .5, 'y': .1},
                                     )
-        self.successtb = Label(text="[color=ffffff]Success[/color]",
-                               pos_hint={"center_x": .5},
-                               markup=True,
-                               )
-        self.failtb = Label(text="[color=ffffff]Fail[/color]",
-                            pos_hint={"center_x": .5},
-                            markup=True,
-                            )
 
         self.lowtemp = Button(text="Low Temp",
                               size_hint=(.2, .1),
@@ -223,19 +324,6 @@ class layout(FloatLayout):
         self.add_widget(self.notemp)
         self.add_widget(self.hightemp)
         self.add_widget(self.capturebutton)
-
-    def loop(self, *args):
-        time.sleep(20)
-
-    def resetfail(self):
-        self.remove_widget(self.failtb)
-        self.comparebutton.disabled = False
-        self.capturebutton.disabled = False
-
-    def resetsuccess(self):
-        self.remove_widget(self.successtb)
-        self.comparebutton.disabled = False
-        self.capturebutton.disabled = False
 
     def on_stop(self):
         # without this, app will not exit even if the window is closed
@@ -331,10 +419,9 @@ class layout(FloatLayout):
     def comparebtn(self):
         threading.Thread(target=self.facialrecognition).start()
 
-    def facialrecognition(self, *args):
+    def datfacialrecognition(self, *args):
 
         self.comparebutton.disabled = True
-        self.capturebutton.disabled = True
 
         cap = self.capture
 

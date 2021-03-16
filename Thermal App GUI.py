@@ -105,7 +105,7 @@ A high temperature has been detected from the Corserva Kiosk. Please speak to ne
         adminmessage = """\
 Subject: High Temperature Detected
 
-High Temperature has been detected from user."""
+High Temperature has been detected from user """ + firstname + """ """ + lastname + """."""
         with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
             server.login(sender_email, password)
             # TODO: Send email here

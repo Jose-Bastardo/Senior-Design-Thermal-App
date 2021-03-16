@@ -1,6 +1,18 @@
 import mariadb
 import datetime
 
+#delete all data from database for testing
+def deletedb():
+    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
+                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    cursor = connection.cursor()
+
+    cursor.execute("Delete from history")
+    cursor.execute("Delete from dat")
+    cursor.execute("Delete from user")
+    connection.commit()
+    connection.close()
+
 
 def deletedb():
     connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
@@ -129,6 +141,22 @@ def printuser(userid):
     cursor.close()
     connection.close()
 
+def returnuser(userid):
+    # Establish connection to database
+    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
+                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT firstname, lastname, email FROM user "
+                   "where userid = " + str(userid))
+
+    # print data
+    data = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    return data
 
 def searchuser(userid):
     # Establish connection to database

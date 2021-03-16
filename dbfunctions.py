@@ -124,6 +124,22 @@ def printuser(userid):
     cursor.close()
     connection.close()
 
+def returnuser(userid):
+    # Establish connection to database
+    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
+                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT firstname, lastname, email FROM user "
+                   "where userid = " + str(userid))
+
+    # print data
+    data = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    return data
 
 def newscanhist(userid, temp, passed):
     x = datetime.datetime.now()

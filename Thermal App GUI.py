@@ -44,7 +44,123 @@ global receiver_email  # Enter receiver address
 password = "apesapesapes"
 global firstname
 global lastname
+global newuserid
 userid = None
+
+faces = None
+
+
+def facialrecognition(faceCascade, _, frame):
+
+    global faces
+
+    def randomNum(n):
+        min = pow(10, n - 1)
+        max = pow(10, n) - 1
+        return random.randint(min, max)
+
+    # logFile = open("log.txt", "a")
+    # sys.stdout = logFile
+    print("\n\n=======================================================================================")
+    print("----------------------------------------------------------------------------------------")
+    print("Running webcam_comparision.py")
+    # Print out date and time of code execution
+    todayDate = datetime.now()
+    print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
+    print("----------------------------------------------------------------------------------------")
+
+    # Read the image
+    image = frame
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Detect faces in the image
+    newfaces = faceCascade.detectMultiScale(
+        gray,
+        scaleFactor=1.3,
+        minNeighbors=5,
+        minSize=(20, 20),
+        flags=cv2.CASCADE_SCALE_IMAGE
+    )
+
+    if len(newfaces) is not 0:
+        print("Found {0} faces!".format(len(newfaces)))
+        faces = newfaces
+
+        print("Face found. Beginning comparision check....")
+        #threading.Thread(target=facecomparison, args=(image,)).start()
+        #facecomparison(image)
+        # For loop to compare patterns from webcam with .dat files
+        # If comparison returns true, break from for loop
+
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    else:
+        print(
+            "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+        print("========================================================================================")
+        faces = None
+
+def facecomparison(image):
+
+    def randomNum(n):
+        min = pow(10, n - 1)
+        max = pow(10, n) - 1
+        return random.randint(min, max)
+
+    datdir = "Face_Recognition/dat/"
+    imagesdir = "Face_Recognition/scan_compare/"
+
+    """
+    for (x, y, w, h) in self.faces:
+        img = image[y:y+h, x:x+w]
+        randnum = str(randomNum(20))
+        imgdir = imagesdir + randnum
+        cv2.imwrite(imgdir, img)
+        unknown_image = face_recognition.load_image_file(imgdir)
+        try:
+            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+        except IndexError:
+            print(
+                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            os.remove(imgdir)
+            print("========================================================================================")
+            continue
+    """
+
+    if faces is not None:
+        randnum = str(randomNum(20))
+        imgdir = imagesdir + randnum + ".jpg"
+        cv2.imwrite(imgdir, image)
+        unknown_image = face_recognition.load_image_file(imgdir)
+
+        try:
+            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+        except IndexError:
+            print(
+                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            os.remove(imgdir)
+            print("========================================================================================")
+            return
+
+
+        data = dbfunctions.returnallfaces()
+        for d in data:
+            randnum = str(randomNum(20))
+            dataFile = datdir + randnum + ".dat"
+            s = open(dataFile, 'wb')
+            s.write(d[1])
+            s.close()
+            with open(dataFile, 'rb') as f:
+                known_faces = (pickle.load(f))
+
+            results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
+            os.remove(dataFile)
+            if (results[0] == True):
+                global firstname, lastname, receiver_email, userid
+                userid = d[0]
+                firstname, lastname, receiver_email = dbfunctions.returnuser(userid)
+                break
+
 
 class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
@@ -55,7 +171,6 @@ class KivyCamera(Image):
         self.tlimit = 2 * 60
         self.timer = self.tlimit
         self.squarecolor = (0, 0, 0)
-        self.userid = None
 
 
         cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
@@ -63,11 +178,71 @@ class KivyCamera(Image):
         # Create the haar cascade
         self.faceCascade = cv2.CascadeClassifier(cascPath)
 
-        self.facethread = threading.Thread(target=self.facialrecognition, args=(self.faceCascade,))
+        self.facethread = None
 
         #Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
-        Clock.schedule_interval(partial(self.start_facial_recognition), 4)
-        Clock.schedule_interval(partial(self.update), 1.0 / fps)
+        Clock.schedule_interval(partial(self.update,), 1.0 / fps)
+
+    def update(self, *args):
+
+        ret, frame = self.capture.read()
+        self.start_facial_recognition(ret, frame)
+
+        global faces, userid
+
+        temp = self.temp
+        timer = self.timer
+        tlimit = self.tlimit
+
+        if faces is not None:
+            if timer == tlimit:
+                if temp == None:
+                    self.squarecolor = (0, 0, 0)
+                elif temp > 98.6:
+                    self.timer = 0
+                    self.squarecolor = (0, 0, 255)
+                    if userid is not None:
+                        dbfunctions.newscanhist(userid, temp, False)
+                        self.start_user_mail_thread()
+                        self.start_admin_mail_thread()
+                    self.temp = None
+                    userid = None
+                elif temp <= 98.6:
+                    self.timer = 0
+                    self.squarecolor = (0, 255, 0)
+                    if userid is not None:
+                        dbfunctions.newscanhist(userid, temp, True)
+                    self.temp = None
+                    userid = None
+
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
+
+        if self.timer != self.tlimit:
+            self.timer += 1
+
+        if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
+            scale_percent = Window.width/frame.shape[1]
+        else:
+            scale_percent = Window.height / frame.shape[0]
+
+        width = int(frame.shape[1] * scale_percent)
+        height = int(frame.shape[0] * scale_percent)
+        dim = (width, height)
+        resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+        if ret:
+            # convert it to texture
+            buf1 = cv2.flip(resized, 0)
+            buf = buf1.tobytes()
+            image_texture = Texture.create(
+                #size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
+
+            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+
+            # display image from the texture
+            self.texture = image_texture
 
     def start_user_mail_thread(self):
         threading.Thread(target=self.usersendemail, args=()).start()
@@ -75,14 +250,20 @@ class KivyCamera(Image):
     def start_admin_mail_thread(self):
         threading.Thread(target=self.adminsendemail, args=()).start()
 
-    def start_facial_recognition(self, *args):
-        print(self.facethread.is_alive())
-        if self.facethread.is_alive():
+    def start_facial_recognition(self, _, frame):
+        if(self.facethread == None):
+            self.facethread = threading.Thread(target=facialrecognition,
+                                               args=(self.faceCascade, _, frame,))
+            self.facethread.start()
+        elif self.facethread.is_alive():
+            print(self.facethread.is_alive())
             return
         else:
-            self.facethread = threading.Thread(target=self.facialrecognition, args=(self.faceCascade,))
+            print(self.facethread.is_alive())
+            self.facethread = threading.Thread(target=facialrecognition, args=(self.faceCascade, _, frame,))
             self.facethread.start()
 
+#Send email to users
     def usersendemail(self):
         # Create a secure SSL context
         context = ssl.create_default_context()
@@ -99,6 +280,7 @@ A high temperature has been detected from the Corserva Kiosk. Please speak to ne
             # TODO: Send email here
             server.sendmail(sender_email, receiver_email, usermessage)
 
+#Send email to admin/attendant
     def adminsendemail(self):
         # Create a secure SSL context
         context = ssl.create_default_context()
@@ -119,187 +301,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
     def tempfail(self):
         self.temp = 100
-
-    def facialrecognition(self, faceCascade):
-
-        cap = self.capture
-
-        def randomNum(n):
-            min = pow(10, n - 1)
-            max = pow(10, n) - 1
-            return random.randint(min, max)
-
-        datFolderLoc = 'Face_Recognition/extract/'
-
-        # logFile = open("log.txt", "a")
-        # sys.stdout = logFile
-        print("\n\n=======================================================================================")
-        print("----------------------------------------------------------------------------------------")
-        print("Running webcam_comparision.py")
-        # Print out date and time of code execution
-        todayDate = datetime.now()
-        print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
-        print("----------------------------------------------------------------------------------------")
-
-        detector = dlib.get_frontal_face_detector()
-        predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
-        _, frame = cap.read()
-
-        # Read the image
-        image = frame
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Detect faces in the image
-        faces = faceCascade.detectMultiScale(
-            gray,
-            scaleFactor=1.3,
-            minNeighbors=5,
-            minSize=(20, 20),
-            flags=cv2.CASCADE_SCALE_IMAGE
-        )
-
-        if len(faces) is not 0:
-            print("Found {0} faces!".format(len(faces)))
-            self.faces = faces
-
-
-            print("Face found. Beginning comparision check....")
-            self.facecomparison(image)
-            # For loop to compare patterns from webcam with .dat files
-            # If comparison returns true, break from for loop
-
-            # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        else:
-            print(
-                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-            print("========================================================================================")
-            self.faces = None
-
-    def facecomparison(self, image):
-
-        def randomNum(n):
-            min = pow(10, n - 1)
-            max = pow(10, n) - 1
-            return random.randint(min, max)
-
-        datdir = "Face_Recognition/dat/"
-        imagesdir = "Face_Recognition/scan_compare/"
-
-        """
-        for (x, y, w, h) in self.faces:
-            img = image[y:y+h, x:x+w]
-            randnum = str(randomNum(20))
-            imgdir = imagesdir + randnum
-            cv2.imwrite(imgdir, img)
-            unknown_image = face_recognition.load_image_file(imgdir)
-            try:
-                unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
-            except IndexError:
-                print(
-                    "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-                os.remove(imgdir)
-                print("========================================================================================")
-                continue
-        """
-
-        if self.faces is not None:
-            randnum = str(randomNum(20))
-            imgdir = imagesdir + randnum + ".jpg"
-            cv2.imwrite(imgdir, image)
-            unknown_image = face_recognition.load_image_file(imgdir)
-
-            try:
-                unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
-            except IndexError:
-                print(
-                    "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-                os.remove(imgdir)
-                print("========================================================================================")
-                return
-
-            personFound = False
-
-            data = dbfunctions.returnallfaces()
-            for d in data:
-                randnum = str(randomNum(20))
-                dataFile = datdir + randnum + ".dat"
-                s = open(dataFile, 'wb')
-                s.write(d[1])
-                s.close()
-                with open(dataFile, 'rb') as f:
-                    known_faces = (pickle.load(f))
-
-                results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
-                os.remove(dataFile)
-                if (results[0] == True):
-                    personFound = True
-                    self.userid = d[0]
-                    print(self.userid)
-                    global firstname, lastname, receiver_email
-                    firstname, lastname, receiver_email = dbfunctions.returnuser(self.userid)
-                    break
-
-    def update(self, *args):
-        ret, frame = self.capture.read()
-
-        faces = self.faces
-        temp = self.temp
-        timer = self.timer
-        tlimit = self.tlimit
-        userid = self.userid
-
-        if faces is not None:
-            if timer == tlimit:
-                if temp == None:
-                    self.squarecolor = (0, 0, 0)
-                elif temp > 98.6:
-                    self.timer = 0
-                    self.squarecolor = (0, 0, 255)
-                    if userid is not None:
-                        dbfunctions.newscanhist(userid, temp, False)
-                        self.start_user_mail_thread()
-                        self.start_admin_mail_thread()
-                    self.temp = None
-                    self.userid = None
-                elif temp <= 98.6:
-                    self.timer = 0
-                    self.squarecolor = (0, 255, 0)
-                    if userid is not None:
-                        dbfunctions.newscanhist(userid, temp, True)
-                    self.temp = None
-                    self.userid = None
-
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
-
-        if self.timer != self.tlimit:
-            self.timer += 1
-
-        if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
-            scale_percent = Window.width/frame.shape[1]
-        else:
-            scale_percent = Window.height / frame.shape[0]
-
-        width = int(frame.shape[1] * scale_percent)
-        height = int(frame.shape[0] * scale_percent)
-        dim = (width, height)
-        resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-
-
-        if ret:
-            # convert it to texture
-            buf1 = cv2.flip(resized, 0)
-            buf = buf1.tobytes()
-            image_texture = Texture.create(
-                #size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-                size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
-
-            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-
-            # display image from the texture
-            self.texture = image_texture
-
 
 class layout(FloatLayout):
     def __init__(self, **kwargs):
@@ -419,11 +420,9 @@ class layout(FloatLayout):
                             pickle.dump(known_faces, f)
                             print("Saved pattern data as " + datFileName + " under dat folder.")
 
-                        global userid
+                        global newuserid
 
-                        print(userid)
-
-                        dbfunctions.insertfacedb(userid, datFolderLoc + datFileName + datExtension)
+                        dbfunctions.insertfacedb(newuserid, datFolderLoc + datFileName + datExtension)
 
                         os.remove(datFolderLoc + datFileName + datExtension)
 
@@ -582,8 +581,8 @@ class CamApp(App):
     @property
     def build(self):
         dbfunctions.deletedb()
-        global userid
-        userid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com", "password")
+        global newuserid
+        newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com", "password")
         return layout
 
 

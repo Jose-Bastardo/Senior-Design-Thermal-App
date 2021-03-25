@@ -96,9 +96,12 @@ def facecomparison(image):
         unknown_image = face_recognition.load_image_file(imgdir)
 
         try:
+            """
             p = Process(target=start_face_encoding, args=(unknown_image,))
             p.start()
             p.join()
+            """
+            unknown_face_encoding = face_recognition.face_encodings(image)[0]
         except IndexError:
             print(
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")

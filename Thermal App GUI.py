@@ -218,6 +218,8 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                 print("========================================================================================")
                 return
 
+            os.remove(imgdir)
+
             personFound = False
 
             data = dbfunctions.returnallfaces()

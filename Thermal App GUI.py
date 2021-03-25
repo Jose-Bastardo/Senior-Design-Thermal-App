@@ -1,17 +1,144 @@
+import multiprocessing
 import threading
+import cv2
+import dlib
+import face_recognition
 
-from kivy.graphics import *
-import mariadb
-import numpy as np
+port = 465  # For SSL
+global smtp_server, sender_email, admin_email, password
+smtp_server = "smtp.gmail.com"
+sender_email = "notarealemailplsignore@gmail.com"
+admin_email = "notarealemailplsignore@gmail.com"  # Enter your address
+global receiver_email  # Enter receiver address
+password = "apesapesapes"
+global firstname
+global lastname
+global newuserid
+facethread = None
+comparisonthread = None
+userid = None
+faces = None
+global unknown_face_encoding
+
+cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
+
+# Create the haar cascade
+faceCascade = cv2.CascadeClassifier(cascPath)
+
+def start_face_encoding(image):
+    global unknown_face_encoding
+    unknown_face_encoding = face_recognition.face_encodings(image)[0]
+
+def start_facial_recognition(_, frame):
+
+    global facethread, faceCascade
+
+    if (facethread == None):
+        facethread = threading.Thread(target=facialrecognition,
+                                           args=(faceCascade, _, frame,))
+        facethread.start()
+    elif facethread.is_alive():
+        print(facethread.is_alive())
+        return
+    else:
+        print(facethread.is_alive())
+        facethread = threading.Thread(target=facialrecognition, args=(faceCascade, _, frame,))
+        facethread.start()
+
+def start_facial_comparison(image):
+    global comparisonthread
+
+    if (comparisonthread == None):
+        comparisonthread = threading.Thread(target=facecomparison,
+                                            args=(image,))
+        comparisonthread.start()
+    elif comparisonthread.is_alive():
+        print(comparisonthread.is_alive())
+        return
+    else:
+        print(comparisonthread.is_alive())
+        comparisonthread = threading.Thread(target=facecomparison, args=(image,))
+        comparisonthread.start()
+
+def facecomparison(image):
+    global faces
+    global unknown_face_encoding
+
+    def randomNum(n):
+        min = pow(10, n - 1)
+        max = pow(10, n) - 1
+        return random.randint(min, max)
+
+    datdir = "Face_Recognition/dat/"
+    imagesdir = "Face_Recognition/scan_compare/"
+
+    """
+    for (x, y, w, h) in faces:
+        img = image[y:y+h, x:x+w]
+        randnum = str(randomNum(20))
+        imgdir = imagesdir + randnum
+        cv2.imwrite(imgdir, img)
+        unknown_image = face_recognition.load_image_file(imgdir)
+        try:
+            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+        except IndexError:
+            print(
+                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            os.remove(imgdir)
+            print("========================================================================================")
+            continue
+    """
+
+    if faces is not None:
+        randnum = str(randomNum(20))
+        imgdir = imagesdir + randnum + ".jpg"
+        cv2.imwrite(imgdir, image)
+        unknown_image = face_recognition.load_image_file(imgdir)
+
+        try:
+            p = Process(target=start_face_encoding, args=(unknown_image,))
+            p.start()
+            p.join()
+        except IndexError:
+            print(
+                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            os.remove(imgdir)
+            print("========================================================================================")
+            return
+
+        os.remove(imgdir)
+
+
+        data = dbfunctions.returnallfaces()
+        for d in data:
+            randnum = str(randomNum(20))
+            dataFile = datdir + randnum + ".dat"
+            s = open(dataFile, 'wb')
+            s.write(d[1])
+            s.close()
+            with open(dataFile, 'rb') as f:
+                known_faces = (pickle.load(f))
+
+            results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
+            os.remove(dataFile)
+            if (results[0] == True):
+                global firstname, lastname, receiver_email, userid
+                userid = d[0]
+                firstname, lastname, receiver_email = dbfunctions.returnuser(userid)
+                break
+
+
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+
+import kivy
+kivy.require('1.9.0')
 from kivy.clock import Clock
-from kivy.graphics.context_instructions import Color
 from kivy.graphics.texture import Texture
 from kivy.properties import partial
 from kivy.uix.button import Button
-from kivy.uix.camera import Camera
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
-from kivy.uix.label import Label
 import dbfunctions
 from kivy.app import App
 from kivy.lang import Builder
@@ -23,41 +150,14 @@ import sys
 import pickle
 import os
 from os import path
-import cv2
-import dlib
 from math import hypot
-import face_recognition
 import smtplib, ssl
+from multiprocessing import Process
 
 Window.fullscreen = False
 
-Builder.load_string('''
-
-
-''')
-
-port = 465  # For SSL
-smtp_server = "smtp.gmail.com"
-sender_email = "notarealemailplsignore@gmail.com"
-admin_email = "notarealemailplsignore@gmail.com"  # Enter your address
-global receiver_email  # Enter receiver address
-password = "apesapesapes"
-global firstname
-global lastname
-global newuserid
-userid = None
-
-faces = None
-
-
 def facialrecognition(faceCascade, _, frame):
-
     global faces
-
-    def randomNum(n):
-        min = pow(10, n - 1)
-        max = pow(10, n) - 1
-        return random.randint(min, max)
 
     # logFile = open("log.txt", "a")
     # sys.stdout = logFile
@@ -87,8 +187,9 @@ def facialrecognition(faceCascade, _, frame):
         faces = newfaces
 
         print("Face found. Beginning comparision check....")
-        #threading.Thread(target=facecomparison, args=(image,)).start()
-        #facecomparison(image)
+        start_facial_comparison(image)
+        # threading.Thread(target=facecomparison, args=(image,)).start()
+        # facecomparison(image)
         # For loop to compare patterns from webcam with .dat files
         # If comparison returns true, break from for loop
 
@@ -100,67 +201,6 @@ def facialrecognition(faceCascade, _, frame):
         print("========================================================================================")
         faces = None
 
-def facecomparison(image):
-
-    def randomNum(n):
-        min = pow(10, n - 1)
-        max = pow(10, n) - 1
-        return random.randint(min, max)
-
-    datdir = "Face_Recognition/dat/"
-    imagesdir = "Face_Recognition/scan_compare/"
-
-    """
-    for (x, y, w, h) in self.faces:
-        img = image[y:y+h, x:x+w]
-        randnum = str(randomNum(20))
-        imgdir = imagesdir + randnum
-        cv2.imwrite(imgdir, img)
-        unknown_image = face_recognition.load_image_file(imgdir)
-        try:
-            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
-        except IndexError:
-            print(
-                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-            os.remove(imgdir)
-            print("========================================================================================")
-            continue
-    """
-
-    if faces is not None:
-        randnum = str(randomNum(20))
-        imgdir = imagesdir + randnum + ".jpg"
-        cv2.imwrite(imgdir, image)
-        unknown_image = face_recognition.load_image_file(imgdir)
-
-        try:
-            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
-        except IndexError:
-            print(
-                "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-            os.remove(imgdir)
-            print("========================================================================================")
-            return
-
-
-        data = dbfunctions.returnallfaces()
-        for d in data:
-            randnum = str(randomNum(20))
-            dataFile = datdir + randnum + ".dat"
-            s = open(dataFile, 'wb')
-            s.write(d[1])
-            s.close()
-            with open(dataFile, 'rb') as f:
-                known_faces = (pickle.load(f))
-
-            results = face_recognition.compare_faces(known_faces, unknown_face_encoding)
-            os.remove(dataFile)
-            if (results[0] == True):
-                global firstname, lastname, receiver_email, userid
-                userid = d[0]
-                firstname, lastname, receiver_email = dbfunctions.returnuser(userid)
-                break
-
 
 class KivyCamera(Image):
     def __init__(self, capture, fps, **kwargs):
@@ -171,22 +211,13 @@ class KivyCamera(Image):
         self.tlimit = 2 * 60
         self.timer = self.tlimit
         self.squarecolor = (0, 0, 0)
-
-
-        cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
-
-        # Create the haar cascade
-        self.faceCascade = cv2.CascadeClassifier(cascPath)
-
-        self.facethread = None
-
-        #Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
-        Clock.schedule_interval(partial(self.update,), 1.0 / fps)
+        # Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
+        Clock.schedule_interval(partial(self.update, ), 1.0 / fps)
 
     def update(self, *args):
 
         ret, frame = self.capture.read()
-        self.start_facial_recognition(ret, frame)
+        start_facial_recognition(ret, frame)
 
         global faces, userid
 
@@ -222,7 +253,7 @@ class KivyCamera(Image):
             self.timer += 1
 
         if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
-            scale_percent = Window.width/frame.shape[1]
+            scale_percent = Window.width / frame.shape[1]
         else:
             scale_percent = Window.height / frame.shape[0]
 
@@ -236,7 +267,7 @@ class KivyCamera(Image):
             buf1 = cv2.flip(resized, 0)
             buf = buf1.tobytes()
             image_texture = Texture.create(
-                #size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                # size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
                 size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
 
             image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
@@ -250,21 +281,9 @@ class KivyCamera(Image):
     def start_admin_mail_thread(self):
         threading.Thread(target=self.adminsendemail, args=()).start()
 
-    def start_facial_recognition(self, _, frame):
-        if(self.facethread == None):
-            self.facethread = threading.Thread(target=facialrecognition,
-                                               args=(self.faceCascade, _, frame,))
-            self.facethread.start()
-        elif self.facethread.is_alive():
-            print(self.facethread.is_alive())
-            return
-        else:
-            print(self.facethread.is_alive())
-            self.facethread = threading.Thread(target=facialrecognition, args=(self.faceCascade, _, frame,))
-            self.facethread.start()
-
-#Send email to users
+    # Send email to users
     def usersendemail(self):
+        global smtp_server, sender_email, admin_email, password
         # Create a secure SSL context
         context = ssl.create_default_context()
 
@@ -280,8 +299,9 @@ A high temperature has been detected from the Corserva Kiosk. Please speak to ne
             # TODO: Send email here
             server.sendmail(sender_email, receiver_email, usermessage)
 
-#Send email to admin/attendant
+    # Send email to admin/attendant
     def adminsendemail(self):
+        global smtp_server, sender_email, admin_email, password
         # Create a secure SSL context
         context = ssl.create_default_context()
         adminmessage = """\
@@ -297,10 +317,11 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
         self.temp = 96
 
     def tempnone(self):
-            self.temp = None
+        self.temp = None
 
     def tempfail(self):
         self.temp = 100
+
 
 class layout(FloatLayout):
     def __init__(self, **kwargs):
@@ -331,7 +352,7 @@ class layout(FloatLayout):
         self.lowtemp.bind(on_press=lambda x: self.my_camera.temppass())
         self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
         self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
-        self.capturebutton.bind(on_press=lambda x: self.start_capture_thread())
+        self.capturebutton.bind(on_press=lambda x: self.capturebtn())
 
         self.add_widget(self.lowtemp)
         self.add_widget(self.notemp)
@@ -351,8 +372,8 @@ class layout(FloatLayout):
         according to their captured time and date.
         '''
 
-        #logFile = open("log.txt", "a")
-        #sys.stdout = logFile
+        # logFile = open("log.txt", "a")
+        # sys.stdout = logFile
         print("\n\n========================================================================================")
         print("----------------------------------------------------------------------------------------")
 
@@ -494,7 +515,7 @@ class layout(FloatLayout):
             for face in faces:
                 x, y = face.left(), face.top()
                 x1, y1 = face.right(), face.bottom()
-                cv2.rectangle(frame, (x,y), (x1,y1), (0,255,0), 3 )# green box, thickness of box
+                cv2.rectangle(frame, (x, y), (x1, y1), (0, 255, 0), 3)  # green box, thickness of box
                 landmarks = predictor(gray, face)
                 left_eye_ratio, _ = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
                 right_eye_ratio, myVerti = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
@@ -587,4 +608,5 @@ class CamApp(App):
 
 
 if __name__ == '__main__':
-    CamApp().run()
+    myApp = CamApp()
+    myApp.run()

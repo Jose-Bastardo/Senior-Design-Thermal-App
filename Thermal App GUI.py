@@ -3,6 +3,7 @@ import threading
 import cv2
 import dlib
 import face_recognition
+import winsound
 
 port = 465  # For SSL
 global smtp_server, sender_email, admin_email, password
@@ -29,7 +30,10 @@ def start_face_encoding(image):
     global unknown_face_encoding
     unknown_face_encoding = face_recognition.face_encodings(image)[0]
 
-def start_facial_recognition(_, frame):
+def start_facial_recognition(_, frame,):
+
+    if frame is None:
+        return
 
     global facethread, faceCascade
 
@@ -101,7 +105,7 @@ def facecomparison(image):
             p.start()
             p.join()
             """
-            unknown_face_encoding = face_recognition.face_encodings(image)[0]
+            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
         except IndexError:
             print(
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
@@ -211,7 +215,9 @@ class KivyCamera(Image):
         self.capture = capture
         self.faces = None
         self.temp = None
-        self.tlimit = 2 * 60
+        self.tlimit = 1.5 * 60
+        self.flimit = 20
+        self.ftime = self.flimit
         self.timer = self.tlimit
         self.squarecolor = (0, 0, 0)
         # Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
@@ -220,7 +226,12 @@ class KivyCamera(Image):
     def update(self, *args):
 
         ret, frame = self.capture.read()
-        start_facial_recognition(ret, frame)
+
+        if self.ftime is self.flimit:
+            self.ftime = 0
+            start_facial_recognition(ret, frame)
+        else:
+            self.ftime += 1
 
         global faces, userid
 
@@ -229,28 +240,31 @@ class KivyCamera(Image):
         tlimit = self.tlimit
 
         if faces is not None:
-            if timer == tlimit:
-                if temp == None:
-                    self.squarecolor = (0, 0, 0)
-                elif temp > 98.6:
-                    self.timer = 0
-                    self.squarecolor = (0, 0, 255)
-                    if userid is not None:
-                        dbfunctions.newscanhist(userid, temp, False)
-                        self.start_user_mail_thread()
-                        self.start_admin_mail_thread()
-                    self.temp = None
-                    userid = None
-                elif temp <= 98.6:
-                    self.timer = 0
-                    self.squarecolor = (0, 255, 0)
-                    if userid is not None:
-                        dbfunctions.newscanhist(userid, temp, True)
-                    self.temp = None
-                    userid = None
-
             for (x, y, w, h) in faces:
+                if timer == tlimit:
+                    if temp == None:
+                        self.squarecolor = (0, 0, 0)
+                    elif temp > 98.6:
+                        self.timer = 0
+                        self.squarecolor = (0, 0, 255)
+                        if userid is not None:
+                            dbfunctions.newscanhist(userid, temp, False)
+                            self.start_user_mail_thread()
+                            self.start_admin_mail_thread()
+                        self.temp = None
+                        userid = None
+                        #winsound.Beep(500, 1500)
+                    elif temp <= 98.6:
+                        self.timer = 0
+                        self.squarecolor = (0, 255, 0)
+                        if userid is not None:
+                            dbfunctions.newscanhist(userid, temp, True)
+                        self.temp = None
+                        userid = None
                 cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
+
+
+
 
         if self.timer != self.tlimit:
             self.timer += 1

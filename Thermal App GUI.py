@@ -9,7 +9,7 @@ port = 465  # For SSL
 global smtp_server, sender_email, admin_email, password
 smtp_server = "smtp.gmail.com"
 sender_email = "notarealemailplsignore@gmail.com"
-admin_email = "notarealemailplsignore@gmail.com"  # Enter your address
+global admin_email
 global receiver_email  # Enter receiver address
 password = "apesapesapes"
 global firstname
@@ -25,6 +25,29 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
+
+def getadminemail():
+    global admin_email
+    dir = "config.txt"
+    if(path.isfile(dir)):
+        with open(dir) as fp:
+            line = fp.readline()
+            while line:
+                if(line.find("admin_email") >= 0):
+                    x = line.split("= ")
+                    print(x[1])
+                    admin_email = x[1]
+                    fp.close()
+                    break
+                else:
+                    line = fp.readline()
+    else:
+        email = "notarealemailplsignore@gmail.com"
+        file = open(dir, "w")
+        file.write("admin_email = "+ email)
+        admin_email = email
+        file.close()
+
 
 def start_face_encoding(image):
     global unknown_face_encoding
@@ -262,9 +285,6 @@ class KivyCamera(Image):
                         self.temp = None
                         userid = None
                 cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
-
-
-
 
         if self.timer != self.tlimit:
             self.timer += 1
@@ -620,7 +640,8 @@ class CamApp(App):
     def build(self):
         dbfunctions.deletedb()
         global newuserid
-        newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com", "password")
+        newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
+        getadminemail()
         return layout
 
 

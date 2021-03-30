@@ -4,9 +4,9 @@ password: 2901567j
 
 CREATE TABLE user(userid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                firstname VARCHAR(100), 
-			   lastname VARCHAR(100), 
-			   email VARCHAR(100), 
-			   password VARCHAR(100));
+			   lastname VARCHAR(100),
+			   email VARCHAR(100)
+			   );
 			   
 CREATE TABLE dat(datid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 userid int unsigned,

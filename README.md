@@ -6,5 +6,5 @@
 1. opencv-python
 2. cmake
 3. dlib
-4. facial_recognition
+4. face_recognition
 5. mariadb

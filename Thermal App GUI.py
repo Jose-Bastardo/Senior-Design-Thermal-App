@@ -26,14 +26,15 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
+
 def getadminemail():
     global admin_email
     dir = "config.txt"
-    if(path.isfile(dir)):
+    if (path.isfile(dir)):
         with open(dir) as fp:
             line = fp.readline()
             while line:
-                if(line.find("admin_email") >= 0):
+                if (line.find("admin_email") >= 0):
                     x = line.split("= ")
                     print(x[1])
                     admin_email = x[1]
@@ -44,7 +45,7 @@ def getadminemail():
     else:
         email = "notarealemailplsignore@gmail.com"
         file = open(dir, "w")
-        file.write("admin_email = "+ email)
+        file.write("admin_email = " + email)
         admin_email = email
         file.close()
 
@@ -53,8 +54,8 @@ def start_face_encoding(image):
     global unknown_face_encoding
     unknown_face_encoding = face_recognition.face_encodings(image)[0]
 
-def start_facial_recognition(_, frame,):
 
+def start_facial_recognition(_, frame, ):
     if frame is None:
         return
 
@@ -62,7 +63,7 @@ def start_facial_recognition(_, frame,):
 
     if (facethread == None):
         facethread = threading.Thread(target=facialrecognition,
-                                           args=(faceCascade, _, frame,))
+                                      args=(faceCascade, _, frame,))
         facethread.start()
     elif facethread.is_alive():
         print(facethread.is_alive())
@@ -71,6 +72,7 @@ def start_facial_recognition(_, frame,):
         print(facethread.is_alive())
         facethread = threading.Thread(target=facialrecognition, args=(faceCascade, _, frame,))
         facethread.start()
+
 
 def start_facial_comparison(image):
     global comparisonthread
@@ -86,6 +88,7 @@ def start_facial_comparison(image):
         print(comparisonthread.is_alive())
         comparisonthread = threading.Thread(target=facecomparison, args=(image,))
         comparisonthread.start()
+
 
 def facecomparison(image):
     global faces
@@ -138,7 +141,6 @@ def facecomparison(image):
 
         os.remove(imgdir)
 
-
         data = dbfunctions.returnallfaces()
         for d in data:
             randnum = str(randomNum(20))
@@ -162,6 +164,7 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
 
 import kivy
+
 kivy.require('1.9.0')
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
@@ -183,8 +186,10 @@ from os import path
 from math import hypot
 import smtplib, ssl
 from multiprocessing import Process
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 
 Window.fullscreen = False
+
 
 def facialrecognition(faceCascade, _, frame):
     global faces
@@ -276,7 +281,7 @@ class KivyCamera(Image):
                             self.start_admin_mail_thread()
                         self.temp = None
                         userid = None
-                        #winsound.Beep(500, 1500)
+                        # winsound.Beep(500, 1500)
                     elif temp <= 98.6:
                         self.timer = 0
                         self.squarecolor = (0, 255, 0)
@@ -360,7 +365,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
         self.temp = 100
 
 
-class layout(FloatLayout):
+class layout(Screen, FloatLayout):
     def __init__(self, **kwargs):
         # make sure we aren't overriding any important functionality
         super(layout, self).__init__(**kwargs)
@@ -369,9 +374,14 @@ class layout(FloatLayout):
         self.add_widget(self.my_camera)
 
         self.capturebutton = Button(text="Capture",
-                                    size_hint=(.7, .1),
+                                    size_hint=(.5, .1),
                                     pos_hint={'center_x': .5, 'y': .1},
                                     )
+
+        self.registeruserbutton = Button(text="Register User",
+                                         size_hint=(.2, .1),
+                                         pos_hint={'center_x': .2, 'y': .1},
+                                         )
 
         self.lowtemp = Button(text="Low Temp",
                               size_hint=(.2, .1),
@@ -390,11 +400,16 @@ class layout(FloatLayout):
         self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
         self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
         self.capturebutton.bind(on_press=lambda x: self.capturebtn())
+        self.registeruserbutton.bind(on_press=lambda x: self.userregistration())
 
         self.add_widget(self.lowtemp)
         self.add_widget(self.notemp)
         self.add_widget(self.hightemp)
         self.add_widget(self.capturebutton)
+        self.add_widget(self.registeruserbutton)
+
+    def userregistration(self):
+        self.screen_manager.current = 'userregistration'
 
     def on_stop(self):
         # without this, app will not exit even if the window is closed
@@ -635,6 +650,21 @@ class layout(FloatLayout):
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+class User_Registration_Page(Screen, FloatLayout):
+    def __init__(self, **kwargs):
+        # make sure we aren't overriding any important functionality
+        super(User_Registration_Page, self).__init__(**kwargs)
+        self.Button = Button(text="Main Page",
+                             size_hint=(.5, .1),
+                             pos_hint={'center_x': .5, 'y': 5},
+                             )
+        self.Button.bind(on_press=lambda x: self.mainpagescreen())
+
+        self.add_widget(self.Button)
+
+    def mainpagescreen(self):
+        ThermalApp.screen_manager.current = 'mainpage'
+
 class CamApp(App):
     @property
     def build(self):
@@ -642,9 +672,23 @@ class CamApp(App):
         global newuserid
         newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
         getadminemail()
+
+        self.screen_manager = ScreenManager()
+
+        # First create a page, then a new screen, add page to screen and screen to screen manager
+        self.MainPage = layout()
+        screen = Screen(name='mainpage')
+        screen.add_widget(self.MainPage)
+        self.screen_manager.add_widget(screen)
+
+        self.userregistrationpage = User_Registration_Page()
+        screen = Screen(name='userregistration')
+        screen.add_widget(self.userregistrationpage)
+        self.screen_manager.add_widget(screen)
+
         return layout
 
 
 if __name__ == '__main__':
-    myApp = CamApp()
-    myApp.run()
+    ThermalApp = CamApp()
+    ThermalApp.run()

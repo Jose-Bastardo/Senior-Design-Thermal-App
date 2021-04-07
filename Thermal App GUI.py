@@ -28,6 +28,7 @@ import dlib
 from math import hypot
 import face_recognition
 import smtplib, ssl
+from kivy.uix.textinput import TextInput
 
 Window.fullscreen = False
 
@@ -309,6 +310,11 @@ class layout(FloatLayout):
         self.my_camera = KivyCamera(capture=self.capture, fps=30, size=Window.size)
         self.add_widget(self.my_camera)
 
+        self.newuserbutton = Button(text="Add New User",
+                                    size_hint=(.2, .1),
+                                    pos_hint={'center_x': .5, 'y': .1},
+                                    )
+
         self.capturebutton = Button(text="Capture",
                                     size_hint=(.7, .1),
                                     pos_hint={'center_x': .5, 'y': .1},
@@ -327,6 +333,7 @@ class layout(FloatLayout):
                                pos_hint={'center_x': .8, 'y': 0},
                                )
 
+        self.newuserbutton.bind(on_press=lambda x: self.adduser())
         self.lowtemp.bind(on_press=lambda x: self.my_camera.temppass())
         self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
         self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
@@ -336,6 +343,14 @@ class layout(FloatLayout):
         self.add_widget(self.notemp)
         self.add_widget(self.hightemp)
         self.add_widget(self.capturebutton)
+
+    def adduser(self):
+        First = TextInput(text='Please enter your first name')
+        Last = TextInput(text='Please enter your last name')
+        Email = TextInput(text='Please enter your email address')
+        Pass = TextInput(text='Please enter your password')
+        dbfunctions.newuser(First, Last, Email, Pass)
+
 
     def on_stop(self):
         # without this, app will not exit even if the window is closed

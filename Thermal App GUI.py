@@ -598,7 +598,7 @@ class CamApp(App):
     def build(self):
         dbfunctions.deletedb()
         global userid
-        userid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com", "password")
+        userid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
         return layout
 
 

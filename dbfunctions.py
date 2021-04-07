@@ -27,7 +27,7 @@ def deletedb():
 
 
 # Insert new user into database
-def newuser(firstname, lastname, email, password):
+def newuser(firstname, lastname, email):
     # Establish connection to database
     connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
                                  host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
@@ -37,8 +37,7 @@ def newuser(firstname, lastname, email, password):
     cursor.execute("Select userid from user "
                    " where firstname = '" + firstname +
                    "' and lastname = '" + lastname +
-                   "' and email = '" + email +
-                   "' and password = '" + password + "'")
+                   "' and email = '" + email + "'")
 
     userid = cursor.fetchone()
 
@@ -46,15 +45,14 @@ def newuser(firstname, lastname, email, password):
         print("user already exists\n")
         return userid[0]
 
-    cursor.execute("INSERT INTO user(firstname, lastname, email, password) VALUES (?,?,?,?)",
-                   (firstname, lastname, email, password))
+    cursor.execute("INSERT INTO user(firstname, lastname, email) VALUES (?,?,?)",
+                   (firstname, lastname, email))
     connection.commit()
 
     cursor.execute("Select userid from user "
                    " where firstname = '" + firstname +
                    "' and lastname = '" + lastname +
-                   "' and email = '" + email +
-                   "' and password = '" + password + "'")
+                   "' and email = '" + email + "'")
 
     userid = cursor.fetchone()
 

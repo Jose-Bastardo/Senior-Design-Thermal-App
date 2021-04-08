@@ -550,13 +550,39 @@ class Settings_Page(FloatLayout):
 class Register_User_Page(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        textinput = TextInput(hint_text='Register User',
+
+        self.submit = Button(text="Submit",
+                             size_hint=(.5, .1),
+                             pos_hint={'center_x': .5, 'y': .1},
+                             )
+
+        self.first = TextInput(hint_text='Please enter your first name',
                               multiline=False,
                               pos_hint={'center_x': .5, 'y': .5},
                               size_hint=(.5, .05),
                               )
-        self.add_widget(textinput)
+        self.last = TextInput(hint_text='Please enter your last name',
+                              multiline=False,
+                              pos_hint={'center_x': .5, 'y': .2},
+                              size_hint=(.5, .05),
+                              )
+        self.email = TextInput(hint_text='Please enter your email address',
+                              multiline=False,
+                              pos_hint={'center_x': .5, 'y': .8},
+                              size_hint=(.5, .05),
+                              )
 
+        self.add_widget(self.first)
+        self.add_widget(self.last)
+        self.add_widget(self.email)
+        self.add_widget(self.submit)
+        self.submit.bind(on_press=lambda x: self.press())
+
+    def press(self):
+        first = self.first.text
+        last = self.last.text
+        email = self.email.text
+        dbfunctions.newuser(first, last, email)
 
 class Admin_Email_Page(FloatLayout):
     def __init__(self, **kwargs):

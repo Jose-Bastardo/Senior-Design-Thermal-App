@@ -582,7 +582,8 @@ class Register_User_Page(FloatLayout):
         first = self.first.text
         last = self.last.text
         email = self.email.text
-        dbfunctions.newuser(first, last, email)
+       # dbfunctions.newuser(first, last, email)
+        dbfunctions.printuser(dbfunctions.newuser(first, last, email))
 
 class Admin_Email_Page(FloatLayout):
     def __init__(self, **kwargs):

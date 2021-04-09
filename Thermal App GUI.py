@@ -4,6 +4,7 @@ import cv2
 import dlib
 import face_recognition
 import winsound
+from validate_email import validate_email
 import kivy
 
 kivy.require('1.9.0')
@@ -29,6 +30,7 @@ import smtplib, ssl
 from multiprocessing import Process
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.textinput import TextInput
+from kivy.uix.label import Label
 
 Window.fullscreen = False
 
@@ -551,39 +553,60 @@ class Register_User_Page(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.invalidemail = Label(text="",
+                                  markup='true',
+                                  pos_hint={'center_x': .5, 'y': .35},
+                                  )
+
         self.submit = Button(text="Submit",
                              size_hint=(.5, .1),
                              pos_hint={'center_x': .5, 'y': .1},
                              )
 
         self.first = TextInput(hint_text='Please enter your first name',
-                              multiline=False,
-                              pos_hint={'center_x': .5, 'y': .5},
-                              size_hint=(.5, .05),
-                              )
+                               multiline=False,
+                               pos_hint={'center_x': .5, 'y': .5},
+                               size_hint=(.5, .05),
+                               )
         self.last = TextInput(hint_text='Please enter your last name',
                               multiline=False,
-                              pos_hint={'center_x': .5, 'y': .2},
+                              pos_hint={'center_x': .5, 'y': .3},
                               size_hint=(.5, .05),
                               )
         self.email = TextInput(hint_text='Please enter your email address',
-                              multiline=False,
-                              pos_hint={'center_x': .5, 'y': .8},
-                              size_hint=(.5, .05),
-                              )
+                               multiline=False,
+                               pos_hint={'center_x': .5, 'y': .7},
+                               size_hint=(.5, .05),
+                               )
 
+        self.add_widget(self.invalidemail)
         self.add_widget(self.first)
         self.add_widget(self.last)
         self.add_widget(self.email)
         self.add_widget(self.submit)
-        self.submit.bind(on_press=lambda x: self.press())
+        self.submit.bind(on_press=lambda x: self.submitregthread())
 
-    def press(self):
+    def submitregthread(self):
+        thread =threading.Thread(target=self.submitregistration)
+        thread.start()
+
+    def submitregistration(self):
         first = self.first.text
         last = self.last.text
         email = self.email.text
-       # dbfunctions.newuser(first, last, email)
-        dbfunctions.printuser(dbfunctions.newuser(first, last, email))
+        is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
+                                  check_dns=True, dns_timeout=10, check_smtp=True, smtp_timeout=10,
+                                  smtp_helo_host='my.host.name', smtp_from_address='my@from.addr.ess',
+                                  smtp_debug=False)
+        if is_valid:
+            self.invalidemail.text = ""
+            dbfunctions.printuser(dbfunctions.newuser(first, last, email))
+            app.screen_manager.transition.direction = 'right'
+            app.screen_manager.current = 'mainpage'
+        else:
+            print("Invalid Email")
+            self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
+
 
 class Admin_Email_Page(FloatLayout):
     def __init__(self, **kwargs):

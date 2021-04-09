@@ -589,7 +589,7 @@ class Register_User_Page(FloatLayout):
         self.submit.bind(on_press=lambda x: self.submitregthread())
 
     def submitregthread(self):
-        thread =threading.Thread(target=self.submitregistration)
+        thread = threading.Thread(target=self.submitregistration)
         thread.start()
 
     def submitregistration(self):
@@ -619,10 +619,10 @@ class Admin_Email_Page(FloatLayout):
                              )
 
         self.adminemail = TextInput(hint_text='Please enter in a new email for use as admin email',
-                              multiline=False,
-                              pos_hint={'center_x': .5, 'y': .5},
-                              size_hint=(.5, .05),
-                              )
+                                    multiline=False,
+                                    pos_hint={'center_x': .5, 'y': .5},
+                                    size_hint=(.5, .05),
+                                    )
         self.add_widget(self.adminemail)
         self.add_widget(self.submit)
 
@@ -632,8 +632,6 @@ class Admin_Email_Page(FloatLayout):
         file = open("config.txt", 'w')
         file.write("admin_email = " + self.adminemail.text)
         file.close
-
-
 
 
 class ThermalApp(App):

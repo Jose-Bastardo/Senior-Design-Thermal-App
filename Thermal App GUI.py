@@ -39,7 +39,7 @@ from kivy.uix.label import Label
 Window.fullscreen = False
 
 port = 465  # For SSL
-global admin_email
+admin_email = None
 smtp_server = "smtp.gmail.com"
 sender_email = "notarealemailplsignore@gmail.com"
 global receiver_email  # Enter receiver address
@@ -58,28 +58,28 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
+def verifyfirstinstall():
+    dir = "config.txt"
+    if (path.isfile(dir)):
+        getadminemail()
+        return 1
+    else:
+        return 0
 
 # Get saved admin email from text file
 def getadminemail():
     global admin_email
     dir = "config.txt"
-    if (path.isfile(dir)):
-        with open(dir) as fp:
-            line = fp.readline()
-            while line:
-                if (line.find("admin_email") >= 0):
-                    x = line.split("= ")
-                    admin_email = x[1]
-                    fp.close()
-                    break
-                else:
-                    line = fp.readline()
-    else:
-        email = "notarealemailplsignore@gmail.com"
-        file = open(dir, "w")
-        file.write("admin_email = " + email)
-        admin_email = email
-        file.close()
+    with open(dir) as fp:
+        line = fp.readline()
+        while line:
+            if (line.find("admin_email") >= 0):
+                x = line.split("= ")
+                admin_email = x[1]
+                fp.close()
+                break
+            else:
+                line = fp.readline()
 
 
 # Start Face Encoding Thread
@@ -701,17 +701,30 @@ class ThermalApp(App):
 
     def build(self):
         dbfunctions.deletedb()
-        global newuserid
-        newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
-        getadminemail()
 
         self.screen_manager = ScreenManager()
 
-        # First create a page, then a new screen, add page to screen and screen to screen manager
-        self.MainPage = layout()
-        screen = Screen(name='mainpage')
-        screen.add_widget(self.MainPage)
-        self.screen_manager.add_widget(screen)
+        if verifyfirstinstall():
+            self.MainPage = layout()
+            screen = Screen(name='mainpage')
+            screen.add_widget(self.MainPage)
+            self.screen_manager.add_widget(screen)
+
+            self.adminemailpage = Admin_Email_Page()
+            screen = Screen(name='adminemailpage')
+            screen.add_widget(self.adminemailpage)
+            self.screen_manager.add_widget(screen)
+
+        else:
+            self.adminemailpage = Admin_Email_Page()
+            screen = Screen(name='adminemailpage')
+            screen.add_widget(self.adminemailpage)
+            self.screen_manager.add_widget(screen)
+
+            self.MainPage = layout()
+            screen = Screen(name='mainpage')
+            screen.add_widget(self.MainPage)
+            self.screen_manager.add_widget(screen)
 
         self.settingspage = Settings_Page()
         screen = Screen(name='settingspage')
@@ -721,11 +734,6 @@ class ThermalApp(App):
         self.userregistrationpage = Register_User_Page()
         screen = Screen(name='registeruserpage')
         screen.add_widget(self.userregistrationpage)
-        self.screen_manager.add_widget(screen)
-
-        self.adminemailpage = Admin_Email_Page()
-        screen = Screen(name='adminemailpage')
-        screen.add_widget(self.adminemailpage)
         self.screen_manager.add_widget(screen)
 
         return self.screen_manager

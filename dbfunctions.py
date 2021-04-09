@@ -112,7 +112,7 @@ def printuser(userid):
                                  host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
     cursor = connection.cursor()
 
-    cursor.execute("SELECT userid, firstname, lastname, email, password FROM user "
+    cursor.execute("SELECT userid, firstname, lastname, email FROM user "
                    "where userid = " + str(userid))
 
     # print data
@@ -149,7 +149,7 @@ def searchuser(userid):
                                  host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
     cursor = connection.cursor()
 
-    cursor.execute("SELECT userid, firstname, lastname, email, password FROM user "
+    cursor.execute("SELECT userid, firstname, lastname, email FROM user "
                    "where userid = " + str(userid))
 
     # print data

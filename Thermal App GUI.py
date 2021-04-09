@@ -1,22 +1,9 @@
-import multiprocessing
 import threading
+from multiprocessing.context import Process
+
 import cv2
 import dlib
-import face_recognition
 import winsound
-import kivy
-
-kivy.require('1.9.0')
-from kivy.clock import Clock
-from kivy.graphics.texture import Texture
-from kivy.properties import partial
-from kivy.uix.button import Button
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.image import Image
-import dbfunctions
-from kivy.app import App
-from kivy.lang import Builder
-from kivy.core.window import Window
 import time
 import random
 from datetime import datetime
@@ -24,13 +11,7 @@ import sys
 import pickle
 import os
 from os import path
-from math import hypot
 import smtplib, ssl
-from multiprocessing import Process
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.textinput import TextInput
-
-Window.fullscreen = False
 
 port = 465  # For SSL
 global admin_email
@@ -42,16 +23,74 @@ global firstname
 global lastname
 global newuserid
 facethread = None
+camthread = None
 comparisonthread = None
 userid = None
 faces = None
 global unknown_face_encoding
+camtexture = None
 
 cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
+# Updates frame on camer widget
+def update(ret, frame):
+
+    global faces, userid
+
+    temp = app.MainPage.my_camera.temp
+    timer = app.MainPage.my_camera.timer
+    tlimit = app.MainPage.my_camera.tlimit
+
+    if faces is not None:
+        for (x, y, w, h) in faces:
+            if timer == tlimit:
+                if temp == None:
+                    squarecolor = (0, 0, 0)
+                elif temp > 98.6:
+                    app.MainPage.my_camera.timer = 0
+                    app.MainPage.my_camera.squarecolor = (0, 0, 255)
+                    if userid is not None:
+                        dbfunctions.newscanhist(userid, temp, False)
+                        app.MainPage.my_camera.start_user_mail_thread()
+                        app.MainPage.my_camera.start_admin_mail_thread()
+                    app.MainPage.my_camera.temp = None
+                    userid = None
+                    # winsound.Beep(500, 1500)
+                elif temp <= 98.6:
+                    app.MainPage.my_camera.timer = 0
+                    app.MainPage.my_camera.squarecolor = (0, 255, 0)
+                    if userid is not None:
+                        dbfunctions.newscanhist(userid, temp, True)
+                    app.MainPage.my_camera.temp = None
+                    userid = None
+            cv2.rectangle(frame, (x, y), (x + w, y + h), app.MainPage.my_camera.squarecolor, 2)
+
+    if app.MainPage.my_camera.timer != app.MainPage.my_camera.tlimit:
+        app.MainPage.my_camera.timer += 1
+
+    if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
+        scale_percent = Window.width / frame.shape[1]
+    else:
+        scale_percent = Window.height / frame.shape[0]
+
+    width = int(frame.shape[1] * scale_percent)
+    height = int(frame.shape[0] * scale_percent)
+    dim = (width, height)
+    resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+    if ret:
+        # convert it to texture
+        buf1 = cv2.flip(resized, 0)
+        buf = buf1.tobytes()
+        image_texture = Texture.create(
+            # size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+            size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
+
+        # display image from the texture
+        Clock.schedule_once(partial(app.MainPage.my_camera.updateTexture, image_texture, buf))
 
 # Get saved admin email from text file
 def getadminemail():
@@ -75,12 +114,22 @@ def getadminemail():
         admin_email = email
         file.close()
 
+def start_cam_update(_, frame):
+    if frame is None:
+        return
 
-# Start Face Encoding Thread
-def start_face_encoding(image):
-    global unknown_face_encoding
-    unknown_face_encoding = face_recognition.face_encodings(image)[0]
+    global camthread
 
+    if (camthread == None):
+        camthread = threading.Thread(target=update,
+                                      args=(_, frame,))
+        camthread.start()
+    elif camthread.is_alive():
+        print(camthread.is_alive())
+        return
+    else:
+        camthread = threading.Thread(target=update, args=(_, frame,))
+        camthread.start()
 
 # Start Facial Recognition Thread
 def start_facial_recognition(_, frame, ):
@@ -97,10 +146,8 @@ def start_facial_recognition(_, frame, ):
         print(facethread.is_alive())
         return
     else:
-        print(facethread.is_alive())
         facethread = threading.Thread(target=facialrecognition, args=(faceCascade, _, frame,))
         facethread.start()
-
 
 # Start Facial Comparison Thread
 def start_facial_comparison(image):
@@ -118,9 +165,14 @@ def start_facial_comparison(image):
         comparisonthread = threading.Thread(target=facecomparison, args=(image,))
         comparisonthread.start()
 
-
+def facecomparisonpool(image):
+    p = Process(facecomparison(image))
+    p.start()
+    p.join()
 # Compares detected faces to facial data in database
 def facecomparison(image):
+    import face_recognition
+
     global faces
     global unknown_face_encoding
 
@@ -150,27 +202,18 @@ def facecomparison(image):
     """
 
     if faces is not None:
-        randnum = str(randomNum(20))
-        imgdir = imagesdir + randnum + ".jpg"
-        cv2.imwrite(imgdir, image)
-        unknown_image = face_recognition.load_image_file(imgdir)
+        unknown_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # the facial embeddings for face in input
+        #unknown_image = face_recognition.face_encodings(rgb)
 
         try:
-            """
-            p = Process(target=start_face_encoding, args=(unknown_image,))
-            p.start()
-            p.join()
-            """
-            unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+            unknown_face_encoding = face_recognition.face_encodings(unknown_image)
         except IndexError:
             print(
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-            os.remove(imgdir)
             print("========================================================================================")
             return
-
-        os.remove(imgdir)
-
+'''
         data = dbfunctions.returnallfaces()
         for d in data:
             randnum = str(randomNum(20))
@@ -188,7 +231,7 @@ def facecomparison(image):
                 userid = d[0]
                 firstname, lastname, receiver_email = dbfunctions.returnuser(userid)
                 break
-
+'''
 
 # Recognizes faces from captured frame
 def facialrecognition(faceCascade, _, frame):
@@ -237,107 +280,27 @@ def facialrecognition(faceCascade, _, frame):
         faces = None
 
 
-# Widget that displays camera
-class KivyCamera(Image):
-    def __init__(self, capture, fps, **kwargs):
-        super(KivyCamera, self).__init__(**kwargs)
-        self.capture = capture
-        self.faces = None
-        self.temp = None
-        self.tlimit = 1.5 * 60
-        self.flimit = 20
-        self.ftime = self.flimit
-        self.timer = self.tlimit
-        self.squarecolor = (0, 0, 0)
-        # Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
-        Clock.schedule_interval(partial(self.update, ), 1.0 / fps)
 
-    # Updates frame on camer widget
-    def update(self, *args):
-
-        ret, frame = self.capture.read()
-
-        if self.ftime is self.flimit:
-            self.ftime = 0
-            start_facial_recognition(ret, frame)
-        else:
-            self.ftime += 1
-
-        global faces, userid
-
-        temp = self.temp
-        timer = self.timer
-        tlimit = self.tlimit
-
-        if faces is not None:
-            for (x, y, w, h) in faces:
-                if timer == tlimit:
-                    if temp == None:
-                        self.squarecolor = (0, 0, 0)
-                    elif temp > 98.6:
-                        self.timer = 0
-                        self.squarecolor = (0, 0, 255)
-                        if userid is not None:
-                            dbfunctions.newscanhist(userid, temp, False)
-                            self.start_user_mail_thread()
-                            self.start_admin_mail_thread()
-                        self.temp = None
-                        userid = None
-                        # winsound.Beep(500, 1500)
-                    elif temp <= 98.6:
-                        self.timer = 0
-                        self.squarecolor = (0, 255, 0)
-                        if userid is not None:
-                            dbfunctions.newscanhist(userid, temp, True)
-                        self.temp = None
-                        userid = None
-                cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
-
-        if self.timer != self.tlimit:
-            self.timer += 1
-
-        if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
-            scale_percent = Window.width / frame.shape[1]
-        else:
-            scale_percent = Window.height / frame.shape[0]
-
-        width = int(frame.shape[1] * scale_percent)
-        height = int(frame.shape[0] * scale_percent)
-        dim = (width, height)
-        resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-
-        if ret:
-            # convert it to texture
-            buf1 = cv2.flip(resized, 0)
-            buf = buf1.tobytes()
-            image_texture = Texture.create(
-                # size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-                size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
-
-            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-
-            # display image from the texture
-            self.texture = image_texture
 
     # Starts thread to send email to user
-    def start_user_mail_thread(self):
-        threading.Thread(target=self.usersendemail, args=()).start()
+    def start_user_mail_thread():
+        threading.Thread(target=usersendemail, args=()).start()
 
     # Starts thread to send email to admin
-    def start_admin_mail_thread(self):
-        threading.Thread(target=self.adminsendemail, args=()).start()
+    def start_admin_mail_thread():
+        threading.Thread(target=adminsendemail, args=()).start()
 
     # Send email to users
-    def usersendemail(self):
+    def usersendemail():
         global smtp_server, sender_email, admin_email, password
         # Create a secure SSL context
         context = ssl.create_default_context()
 
         usermessage = """\
 Subject: Corserva High Temperature Detected
-        
+
 Hello """ + firstname + """ """ + lastname + """,
-        
+
 A high temperature has been detected from the Corserva Kiosk. Please speak to nearby attendant from a manual screening."""
 
         with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
@@ -359,253 +322,306 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             # TODO: Send email here
             server.sendmail(sender_email, admin_email, adminmessage)
 
-    def temppass(self):
-        self.temp = 96
-
-    def tempnone(self):
-        self.temp = None
-
-    def tempfail(self):
-        self.temp = 100
 
 
-# Main Layout that displays the main page
-class layout(FloatLayout):
-    def __init__(self, **kwargs):
-        # make sure we aren't overriding any important functionality
-        super(layout, self).__init__(**kwargs)
-        self.capture = cv2.VideoCapture(0)
-        self.my_camera = KivyCamera(capture=self.capture, fps=30, size=Window.size)
-        self.add_widget(self.my_camera)
-
-        self.capturebutton = Button(text="Capture",
-                                    size_hint=(.5, .1),
-                                    pos_hint={'center_x': .5, 'y': .1},
-                                    )
-
-        self.settingsbutton = Button(background_normal='assets\settingsbuttonimage.png',
-                                     # background_down='assets\settingsbuttonpressed.png',
-                                     size_hint=(.2, .2),
-                                     pos_hint={"x": .8, "y": 0.8}
-                                     )
-        self.lowtemp = Button(text="Low Temp",
-                              size_hint=(.2, .1),
-                              pos_hint={'center_x': .2, 'y': 0},
-                              )
-        self.notemp = Button(text="No Temp",
-                             size_hint=(.2, .1),
-                             pos_hint={'center_x': .5, 'y': 0},
-                             )
-        self.hightemp = Button(text="High Temp",
-                               size_hint=(.2, .1),
-                               pos_hint={'center_x': .8, 'y': 0},
-                               )
-
-        self.lowtemp.bind(on_press=lambda x: self.my_camera.temppass())
-        self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
-        self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
-        self.capturebutton.bind(on_press=lambda x: self.capturebtn())
-        self.settingsbutton.bind(on_press=lambda x: self.gotosettings())
-
-        self.add_widget(self.lowtemp)
-        self.add_widget(self.notemp)
-        self.add_widget(self.hightemp)
-        self.add_widget(self.capturebutton)
-        self.add_widget(self.settingsbutton)
-
-    # Transitions to user registration page
-    def gotosettings(self):
-        app.screen_manager.transition.direction = 'left'
-        app.screen_manager.current = 'settingspage'
-
-    def on_stop(self):
-        # without this, app will not exit even if the window is closed
-        self.capture.release()
-
-    # Starts thread to capture facial data
-    def start_capture_thread(self, *args):
-        threading.Thread(target=self.capturebtn, args=()).start()
-
-    # Function to capture facial data from camera feed
-    def capturebtn(self):
-        '''
-        Function to capture the images and give them the names
-        according to their captured time and date.
-        '''
-
-        # logFile = open("log.txt", "a")
-        # sys.stdout = logFile
-        print("\n\n========================================================================================")
-        print("----------------------------------------------------------------------------------------")
-
-        timestr = time.strftime("%Y%m%d_%H%M%S")
-        ret, frame = self.capture.read()
-        cv2.imwrite("Face_Recognition/extract/IMG_{}.png".format(timestr), frame)
-        print("Captured")
-
-        uploadedImageLoc = 'Face_Recognition/extract/'
-        datFolderLoc = 'Face_Recognition/dat/'
-
-        # Create random number based on specified length of n
-        def randomNum(n):
-            min = pow(10, n - 1)
-            max = pow(10, n) - 1
-            return random.randint(min, max)
-
-        # Create or open log.txt to be written
-        print("\n\n========================================================================================")
-        print("----------------------------------------------------------------------------------------")
-        print("Running uploaded images' patterns extraction")
-        # Print out date and time of code execution
-        todayDate = datetime.now()
-        print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
-        print("----------------------------------------------------------------------------------------")
-
-        # Check if upload folder directory is valid
-        if (path.exists(uploadedImageLoc) == False):
-            print('Folder path does not exists. Terminating program....')
-
-        else:
-            # For loop to read images on uploadedImages folder
-            for imageFile in os.listdir(uploadedImageLoc):
-                print("Loading image:", imageFile)
-
-                # checks if the file does exists
-                if os.path.isfile(uploadedImageLoc + imageFile):
-                    # print("File located! Executing facial pattern extraction")
-
-                    # start of encoding
-                    known_image = face_recognition.load_image_file(uploadedImageLoc + imageFile)
-                    try:
-                        known_face_encoding = face_recognition.face_encodings(known_image)[0]
-                    except IndexError:
-                        print(
-                            "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
-                        sys.stdout.close()
-                        return
-
-                    known_faces = [
-                        known_face_encoding
-                    ]
-
-                    # Save encoding as .dat file
-                    fileLength = len(imageFile) - 4
-                    datExtension = ".dat"
-                    if (fileLength <= 0):
-                        print("ERROR! File naming failed! Terminating program....")
-                        sys.stdout.close()
-
-                    else:
-                        # Generate a random 20 number code for reservation ID
-                        datFileName = str(randomNum(20))
-                        with open(datFolderLoc + datFileName + datExtension, 'wb') as f:
-                            pickle.dump(known_faces, f)
-                            print("Saved pattern data as " + datFileName + " under dat folder.")
-
-                        global newuserid
-
-                        dbfunctions.insertfacedb(newuserid, datFolderLoc + datFileName + datExtension)
-
-                        os.remove(datFolderLoc + datFileName + datExtension)
-
-                    os.remove(uploadedImageLoc + imageFile)
-
-                else:
-                    print("Image doesn't exist! Terminating program....")
-                    print(
-                        "========================================================================================")
-            print("SUCCESS: Patterns extraction completed. Terminiating program.")
-            print("========================================================================================")
 
 
-class Settings_Page(FloatLayout):
-    def __init__(self, **kwargs):
-        # make sure we aren't overriding any important functionality
-        super(Settings_Page, self).__init__(**kwargs)
-        self.registeruserbutton = Button(text="Register User",
-                                         size_hint=(.5, .1),
-                                         pos_hint={'center_x': .5, 'y': .6}
-                                         )
 
-        self.adminemailbutton = Button(text="Change Admin Email",
-                                       size_hint=(.5, .1),
-                                       pos_hint={'center_x': .5, 'y': .3}
-                                       )
-
-        self.registeruserbutton.bind(on_press=lambda x: self.registeruserscreen())
-        self.adminemailbutton.bind(on_press=lambda x: self.adminemailscreen())
-
-        self.add_widget(self.registeruserbutton)
-        self.add_widget(self.adminemailbutton)
-
-    def registeruserscreen(self):
-        app.screen_manager.transition.direction = 'left'
-        app.screen_manager.current = 'registeruserpage'
-
-    def adminemailscreen(self):
-        app.screen_manager.transition.direction = 'left'
-        app.screen_manager.current = 'adminemailpage'
-
-
-class Register_User_Page(FloatLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        textinput = TextInput(hint_text='Register User',
-                              multiline=False,
-                              pos_hint={'center_x': .5, 'y': .5},
-                              size_hint=(.5, .05),
-                              )
-        self.add_widget(textinput)
-
-
-class Admin_Email_Page(FloatLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        textinput = TextInput(hint_text='Admin Email',
-                              multiline=False,
-                              pos_hint={'center_x': .5, 'y': .5},
-                              size_hint=(.5, .05),
-                              )
-        self.add_widget(textinput)
-
-
-class ThermalApp(App):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.screen_manager = None
-
-    def build(self):
-        dbfunctions.deletedb()
-        global newuserid
-        newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
-        getadminemail()
-
-        self.screen_manager = ScreenManager()
-
-        # First create a page, then a new screen, add page to screen and screen to screen manager
-        self.MainPage = layout()
-        screen = Screen(name='mainpage')
-        screen.add_widget(self.MainPage)
-        self.screen_manager.add_widget(screen)
-
-        self.settingspage = Settings_Page()
-        screen = Screen(name='settingspage')
-        screen.add_widget(self.settingspage)
-        self.screen_manager.add_widget(screen)
-
-        self.userregistrationpage = Register_User_Page()
-        screen = Screen(name='registeruserpage')
-        screen.add_widget(self.userregistrationpage)
-        self.screen_manager.add_widget(screen)
-
-        self.adminemailpage = Admin_Email_Page()
-        screen = Screen(name='adminemailpage')
-        screen.add_widget(self.adminemailpage)
-        self.screen_manager.add_widget(screen)
-
-        return self.screen_manager
 
 
 if __name__ == '__main__':
+    import kivy
+
+    kivy.require('1.9.0')
+    from kivy.clock import Clock
+    from kivy.graphics.texture import Texture
+    from kivy.properties import partial
+    from kivy.uix.button import Button
+    from kivy.uix.floatlayout import FloatLayout
+    from kivy.uix.image import Image
+    import dbfunctions
+    from kivy.app import App
+    from kivy.lang import Builder
+    from kivy.core.window import Window
+    from kivy.uix.screenmanager import ScreenManager, Screen
+    from kivy.uix.textinput import TextInput
+
+    Window.fullscreen = False
+
+    # Widget that displays camera
+    class KivyCamera(Image):
+        def __init__(self, capture, fps, **kwargs):
+            super(KivyCamera, self).__init__(**kwargs)
+            self.capture = capture
+            self.faces = None
+            self.temp = None
+            self.tlimit = 1.5 * 60
+            self.flimit = 20
+            self.ftime = self.flimit
+            self.timer = self.tlimit
+            self.facetimer = 0
+            self.squarecolor = (0, 0, 0)
+            # Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
+            Clock.schedule_interval(partial(self.read_camera, ), 1.0 / fps)
+
+        def read_camera(self, *args):
+            global camtexture
+            global camthread
+
+            ret, frame = self.capture.read()
+            start_facial_recognition(ret, frame)
+            start_cam_update(ret, frame)
+
+        def updateTexture(self, testexture, buf, *args):
+            testexture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            self.texture = testexture
+
+        def temppass(self):
+            self.temp = 96
+
+        def tempnone(self):
+            self.temp = None
+
+        def tempfail(self):
+            self.temp = 100
+
+
+    # Main Layout that displays the main page
+    class layout(FloatLayout):
+        def __init__(self, **kwargs):
+            # make sure we aren't overriding any important functionality
+            super(layout, self).__init__(**kwargs)
+            self.capture = cv2.VideoCapture(0)
+            self.my_camera = KivyCamera(capture=self.capture, fps=30, size=Window.size)
+            self.add_widget(self.my_camera)
+
+            self.capturebutton = Button(text="Capture",
+                                        size_hint=(.5, .1),
+                                        pos_hint={'center_x': .5, 'y': .1},
+                                        )
+
+            self.settingsbutton = Button(background_normal='assets\settingsbuttonimage.png',
+                                         # background_down='assets\settingsbuttonpressed.png',
+                                         size_hint=(.2, .2),
+                                         pos_hint={"x": .8, "y": 0.8}
+                                         )
+            self.lowtemp = Button(text="Low Temp",
+                                  size_hint=(.2, .1),
+                                  pos_hint={'center_x': .2, 'y': 0},
+                                  )
+            self.notemp = Button(text="No Temp",
+                                 size_hint=(.2, .1),
+                                 pos_hint={'center_x': .5, 'y': 0},
+                                 )
+            self.hightemp = Button(text="High Temp",
+                                   size_hint=(.2, .1),
+                                   pos_hint={'center_x': .8, 'y': 0},
+                                   )
+
+            self.lowtemp.bind(on_press=lambda x: self.my_camera.temppass())
+            self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
+            self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
+            self.capturebutton.bind(on_press=lambda x: self.capturebtn())
+            self.settingsbutton.bind(on_press=lambda x: self.gotosettings())
+
+            self.add_widget(self.lowtemp)
+            self.add_widget(self.notemp)
+            self.add_widget(self.hightemp)
+            self.add_widget(self.capturebutton)
+            self.add_widget(self.settingsbutton)
+
+        # Transitions to user registration page
+        def gotosettings(self):
+            app.screen_manager.transition.direction = 'left'
+            app.screen_manager.current = 'settingspage'
+
+        def on_stop(self):
+            # without this, app will not exit even if the window is closed
+            self.capture.release()
+
+        # Starts thread to capture facial data
+        def start_capture_thread(self, *args):
+            threading.Thread(target=self.capturebtn, args=()).start()
+
+        # Function to capture facial data from camera feed
+        def capturebtn(self):
+            '''
+            Function to capture the images and give them the names
+            according to their captured time and date.
+            '''
+
+            import face_recognition
+
+            # logFile = open("log.txt", "a")
+            # sys.stdout = logFile
+            print("\n\n========================================================================================")
+            print("----------------------------------------------------------------------------------------")
+
+            timestr = time.strftime("%Y%m%d_%H%M%S")
+            ret, frame = self.capture.read()
+            cv2.imwrite("Face_Recognition/extract/IMG_{}.png".format(timestr), frame)
+            print("Captured")
+
+            uploadedImageLoc = 'Face_Recognition/extract/'
+            datFolderLoc = 'Face_Recognition/dat/'
+
+            # Create random number based on specified length of n
+            def randomNum(n):
+                min = pow(10, n - 1)
+                max = pow(10, n) - 1
+                return random.randint(min, max)
+
+            # Create or open log.txt to be written
+            print("\n\n========================================================================================")
+            print("----------------------------------------------------------------------------------------")
+            print("Running uploaded images' patterns extraction")
+            # Print out date and time of code execution
+            todayDate = datetime.now()
+            print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
+            print("----------------------------------------------------------------------------------------")
+
+            # Check if upload folder directory is valid
+            if (path.exists(uploadedImageLoc) == False):
+                print('Folder path does not exists. Terminating program....')
+
+            else:
+                # For loop to read images on uploadedImages folder
+                for imageFile in os.listdir(uploadedImageLoc):
+                    print("Loading image:", imageFile)
+
+                    # checks if the file does exists
+                    if os.path.isfile(uploadedImageLoc + imageFile):
+                        # print("File located! Executing facial pattern extraction")
+
+                        # start of encoding
+                        known_image = face_recognition.load_image_file(uploadedImageLoc + imageFile)
+                        try:
+                            known_face_encoding = face_recognition.face_encodings(known_image)[0]
+                        except IndexError:
+                            print(
+                                "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
+                            sys.stdout.close()
+                            return
+
+                        known_faces = [
+                            known_face_encoding
+                        ]
+
+                        # Save encoding as .dat file
+                        fileLength = len(imageFile) - 4
+                        datExtension = ".dat"
+                        if (fileLength <= 0):
+                            print("ERROR! File naming failed! Terminating program....")
+                            sys.stdout.close()
+
+                        else:
+                            # Generate a random 20 number code for reservation ID
+                            datFileName = str(randomNum(20))
+                            with open(datFolderLoc + datFileName + datExtension, 'wb') as f:
+                                pickle.dump(known_faces, f)
+                                print("Saved pattern data as " + datFileName + " under dat folder.")
+
+                            global newuserid
+
+                            dbfunctions.insertfacedb(newuserid, datFolderLoc + datFileName + datExtension)
+
+                            os.remove(datFolderLoc + datFileName + datExtension)
+
+                        os.remove(uploadedImageLoc + imageFile)
+
+                    else:
+                        print("Image doesn't exist! Terminating program....")
+                        print(
+                            "========================================================================================")
+                print("SUCCESS: Patterns extraction completed. Terminiating program.")
+                print("========================================================================================")
+
+
+    class Settings_Page(FloatLayout):
+        def __init__(self, **kwargs):
+            # make sure we aren't overriding any important functionality
+            super(Settings_Page, self).__init__(**kwargs)
+            self.registeruserbutton = Button(text="Register User",
+                                             size_hint=(.5, .1),
+                                             pos_hint={'center_x': .5, 'y': .6}
+                                             )
+
+            self.adminemailbutton = Button(text="Change Admin Email",
+                                           size_hint=(.5, .1),
+                                           pos_hint={'center_x': .5, 'y': .3}
+                                           )
+
+            self.registeruserbutton.bind(on_press=lambda x: self.registeruserscreen())
+            self.adminemailbutton.bind(on_press=lambda x: self.adminemailscreen())
+
+            self.add_widget(self.registeruserbutton)
+            self.add_widget(self.adminemailbutton)
+
+        def registeruserscreen(self):
+            app.screen_manager.transition.direction = 'left'
+            app.screen_manager.current = 'registeruserpage'
+
+        def adminemailscreen(self):
+            app.screen_manager.transition.direction = 'left'
+            app.screen_manager.current = 'adminemailpage'
+
+
+    class Register_User_Page(FloatLayout):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            textinput = TextInput(hint_text='Register User',
+                                  multiline=False,
+                                  pos_hint={'center_x': .5, 'y': .5},
+                                  size_hint=(.5, .05),
+                                  )
+            self.add_widget(textinput)
+
+
+    class Admin_Email_Page(FloatLayout):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            textinput = TextInput(hint_text='Admin Email',
+                                  multiline=False,
+                                  pos_hint={'center_x': .5, 'y': .5},
+                                  size_hint=(.5, .05),
+                                  )
+            self.add_widget(textinput)
+
+    class ThermalApp(App):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.screen_manager = None
+
+            dbfunctions.deletedb()
+            global newuserid
+            newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
+            getadminemail()
+
+            self.screen_manager = ScreenManager()
+
+            # First create a page, then a new screen, add page to screen and screen to screen manager
+            self.MainPage = layout()
+            screen = Screen(name='mainpage')
+            screen.add_widget(self.MainPage)
+            self.screen_manager.add_widget(screen)
+
+            self.settingspage = Settings_Page()
+            screen = Screen(name='settingspage')
+            screen.add_widget(self.settingspage)
+            self.screen_manager.add_widget(screen)
+
+            self.userregistrationpage = Register_User_Page()
+            screen = Screen(name='registeruserpage')
+            screen.add_widget(self.userregistrationpage)
+            self.screen_manager.add_widget(screen)
+
+            self.adminemailpage = Admin_Email_Page()
+            screen = Screen(name='adminemailpage')
+            screen.add_widget(self.adminemailpage)
+            self.screen_manager.add_widget(screen)
+
+        def build(self):
+            return self.screen_manager
+
     app = ThermalApp()
     app.run()

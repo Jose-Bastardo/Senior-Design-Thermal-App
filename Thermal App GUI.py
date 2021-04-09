@@ -1,5 +1,7 @@
 import multiprocessing
 import threading
+from typing import TextIO
+
 import cv2
 import dlib
 import face_recognition
@@ -611,12 +613,27 @@ class Register_User_Page(FloatLayout):
 class Admin_Email_Page(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        textinput = TextInput(hint_text='Admin Email',
+        self.submit = Button(text="Submit",
+                             size_hint=(.5, .1),
+                             pos_hint={'center_x': .5, 'y': .1},
+                             )
+
+        self.adminemail = TextInput(hint_text='Please enter in a new email for use as admin email',
                               multiline=False,
                               pos_hint={'center_x': .5, 'y': .5},
                               size_hint=(.5, .05),
                               )
-        self.add_widget(textinput)
+        self.add_widget(self.adminemail)
+        self.add_widget(self.submit)
+
+        self.submit.bind(on_press=lambda x: self.pressed())
+
+    def pressed(self):
+        file = open("config.txt", 'w')
+        file.write("admin_email = " + self.adminemail.text)
+        file.close
+
+
 
 
 class ThermalApp(App):

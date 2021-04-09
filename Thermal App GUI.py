@@ -6,6 +6,8 @@ import cv2
 import dlib
 import face_recognition
 import winsound
+from kivy.graphics.context_instructions import Color
+from kivy.graphics.vertex_instructions import Rectangle
 from validate_email import validate_email
 import kivy
 
@@ -526,14 +528,21 @@ class Settings_Page(FloatLayout):
     def __init__(self, **kwargs):
         # make sure we aren't overriding any important functionality
         super(Settings_Page, self).__init__(**kwargs)
+
+        with self.canvas:
+            Color(.145, .1529, .302, 1, mode='rgba')
+            Rectangle(pos=self.pos, size=Window.size)
+
         self.registeruserbutton = Button(text="Register User",
                                          size_hint=(.5, .1),
-                                         pos_hint={'center_x': .5, 'y': .6}
+                                         pos_hint={'center_x': .5, 'y': .6},
+                                         background_color=(.4, .65, 1, 1)
                                          )
 
         self.adminemailbutton = Button(text="Change Admin Email",
                                        size_hint=(.5, .1),
-                                       pos_hint={'center_x': .5, 'y': .3}
+                                       pos_hint={'center_x': .5, 'y': .3},
+                                       background_color=(.4, .65, 1, 1),
                                        )
 
         self.registeruserbutton.bind(on_press=lambda x: self.registeruserscreen())
@@ -555,6 +564,10 @@ class Register_User_Page(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        with self.canvas:
+            Color(.145, .1529, .302, 1, mode='rgba')
+            Rectangle(pos=self.pos, size=Window.size)
+
         self.invalidemail = Label(text="",
                                   markup='true',
                                   pos_hint={'center_x': .5, 'y': .35},
@@ -563,6 +576,7 @@ class Register_User_Page(FloatLayout):
         self.submit = Button(text="Submit",
                              size_hint=(.5, .1),
                              pos_hint={'center_x': .5, 'y': .1},
+                             background_color=(.4, .65, 1, 1),
                              )
 
         self.first = TextInput(hint_text='Please enter your first name',
@@ -596,6 +610,7 @@ class Register_User_Page(FloatLayout):
         first = self.first.text
         last = self.last.text
         email = self.email.text
+
         is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
                                   check_dns=True, dns_timeout=10, check_smtp=True, smtp_timeout=10,
                                   smtp_helo_host='my.host.name', smtp_from_address='my@from.addr.ess',
@@ -606,16 +621,25 @@ class Register_User_Page(FloatLayout):
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'mainpage'
         else:
-            print("Invalid Email")
             self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
+
+        self.first.text = ""
+        self.last.text = ""
+        self.email.text = ""
 
 
 class Admin_Email_Page(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        with self.canvas:
+            Color(.145, .1529, .302, 1, mode='rgba')
+            Rectangle(pos=self.pos, size=Window.size)
+
         self.submit = Button(text="Submit",
                              size_hint=(.5, .1),
                              pos_hint={'center_x': .5, 'y': .1},
+                             background_color=(.4, .65, 1, 1),
                              )
 
         self.adminemail = TextInput(hint_text='Please enter in a new email for use as admin email',
@@ -623,15 +647,51 @@ class Admin_Email_Page(FloatLayout):
                                     pos_hint={'center_x': .5, 'y': .5},
                                     size_hint=(.5, .05),
                                     )
+
+        self.invalidemail = Label(text="",
+                                  markup='true',
+                                  pos_hint={'center_x': .5, 'y': .35},
+                                  )
+
+        self.add_widget(self.invalidemail)
         self.add_widget(self.adminemail)
         self.add_widget(self.submit)
 
-        self.submit.bind(on_press=lambda x: self.pressed())
+        self.submit.bind(on_press=lambda x: self.submitadminemail())
 
-    def pressed(self):
-        file = open("config.txt", 'w')
-        file.write("admin_email = " + self.adminemail.text)
-        file.close
+    def submitadminemail(self):
+        thread = threading.Thread(target=self.changeadminemail)
+        thread.start()
+
+    def changeadminemail(self):
+        global admin_email
+        email = self.adminemail.text
+
+        if email == admin_email:
+            print("email exists")
+            self.invalidemail.text = "[color=ff3333]Email is Already in Use[/color]"
+            self.adminemail.text = ""
+            return
+
+        is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
+                                  check_dns=True, dns_timeout=10, check_smtp=True, smtp_timeout=10,
+                                  smtp_helo_host='my.host.name', smtp_from_address='my@from.addr.ess',
+                                  smtp_debug=False)
+
+        if is_valid:
+
+            self.invalidemail.text = ""
+            admin_email = email
+            file = open("config.txt", 'w')
+            file.write("admin_email = " + email)
+            file.close()
+            app.screen_manager.transition.direction = 'right'
+            app.screen_manager.current = 'mainpage'
+
+        else:
+            self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
+
+        self.adminemail.text = ""
 
 
 class ThermalApp(App):

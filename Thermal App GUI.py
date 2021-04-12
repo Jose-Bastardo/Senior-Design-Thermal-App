@@ -16,6 +16,7 @@ import smtplib, ssl
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.vertex_instructions import Rectangle
 from kivy.uix.label import Label
+from validate_email import validate_email
 
 port = 465  # For SSL
 global admin_email

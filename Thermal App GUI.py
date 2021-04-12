@@ -58,7 +58,7 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
-def verifyfirstinstall():
+def verifyadminemail():
     dir = "config.txt"
     if (path.isfile(dir)):
         getadminemail()
@@ -200,16 +200,6 @@ def facecomparison(image):
 def facialrecognition(faceCascade, _, frame):
     global faces
 
-    # logFile = open("log.txt", "a")
-    # sys.stdout = logFile
-    print("\n\n=======================================================================================")
-    print("----------------------------------------------------------------------------------------")
-    print("Running webcam_comparision.py")
-    # Print out date and time of code execution
-    todayDate = datetime.now()
-    print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
-    print("----------------------------------------------------------------------------------------")
-
     # Read the image
     image = frame
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -226,19 +216,11 @@ def facialrecognition(faceCascade, _, frame):
     if len(newfaces) is not 0:
         print("Found {0} faces!".format(len(newfaces)))
         faces = newfaces
-
-        print("Face found. Beginning comparision check....")
         start_facial_comparison(image)
-        # threading.Thread(target=facecomparison, args=(image,)).start()
-        # facecomparison(image)
-        # For loop to compare patterns from webcam with .dat files
-        # If comparison returns true, break from for loop
-
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     else:
         print(
-            "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
+            "I wasn't able to locate any faces in at least one of the images.")
         print("========================================================================================")
         faces = None
 
@@ -704,7 +686,7 @@ class ThermalApp(App):
 
         self.screen_manager = ScreenManager()
 
-        if verifyfirstinstall():
+        if verifyadminemail():
             self.MainPage = layout()
             screen = Screen(name='mainpage')
             screen.add_widget(self.MainPage)

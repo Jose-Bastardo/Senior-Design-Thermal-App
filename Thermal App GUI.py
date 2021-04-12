@@ -541,6 +541,8 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
         # Transitions to user registration page
         def gotosettings(self):
+            global perffacecomp
+            perffacecomp = False
             app.screen_manager.transition.direction = 'left'
             app.screen_manager.current = 'settingspage'
 
@@ -690,6 +692,8 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             app.screen_manager.current = 'adminemailpage'
 
         def mainscreen(self):
+            global perffacecomp
+            perffacecomp = True
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'mainpage'
 
@@ -855,20 +859,41 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
     class ThermalApp(App):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-            self.screen_manager = None
+            self.screen_manager = ScreenManager()
+            global perffacecomp
 
             dbfunctions.deletedb()
             global newuserid
             newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
             getadminemail()
 
-            self.screen_manager = ScreenManager()
+            if verifyfirstinstall():
+                self.MainPage = layout()
+                screen = Screen(name='mainpage')
+                screen.add_widget(self.MainPage)
+                self.screen_manager.add_widget(screen)
 
-            # First create a page, then a new screen, add page to screen and screen to screen manager
-            self.MainPage = layout()
-            screen = Screen(name='mainpage')
-            screen.add_widget(self.MainPage)
-            self.screen_manager.add_widget(screen)
+                self.adminemailpage = Admin_Email_Page()
+                screen = Screen(name='adminemailpage')
+                screen.add_widget(self.adminemailpage)
+                self.screen_manager.add_widget(screen)
+
+                perffacecomp = True
+
+            else:
+                self.adminemailpage = Admin_Email_Page()
+                screen = Screen(name='adminemailpage')
+                screen.add_widget(self.adminemailpage)
+                self.screen_manager.add_widget(screen)
+
+                self.MainPage = layout()
+                screen = Screen(name='mainpage')
+                screen.add_widget(self.MainPage)
+                self.screen_manager.add_widget(screen)
+
+                self.adminemailpage.backbutton.disabled = True
+
+                perffacecomp = False
 
             self.settingspage = Settings_Page()
             screen = Screen(name='settingspage')
@@ -878,11 +903,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             self.userregistrationpage = Register_User_Page()
             screen = Screen(name='registeruserpage')
             screen.add_widget(self.userregistrationpage)
-            self.screen_manager.add_widget(screen)
-
-            self.adminemailpage = Admin_Email_Page()
-            screen = Screen(name='adminemailpage')
-            screen.add_widget(self.adminemailpage)
             self.screen_manager.add_widget(screen)
 
         def build(self):

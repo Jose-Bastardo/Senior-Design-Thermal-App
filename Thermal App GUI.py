@@ -39,6 +39,15 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
+def verifyfirstinstall():
+    dir = "config.txt"
+    if (path.isfile(dir)):
+        getadminemail()
+        return 1
+    else:
+        return 0
+
+
 # Updates frame on camer widget
 def update(ret, frame):
 

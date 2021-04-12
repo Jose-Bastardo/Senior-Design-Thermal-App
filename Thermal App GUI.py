@@ -13,6 +13,10 @@ import os
 from os import path
 import smtplib, ssl
 
+from kivy.graphics.context_instructions import Color
+from kivy.graphics.vertex_instructions import Rectangle
+from kivy.uix.label import Label
+
 port = 465  # For SSL
 global admin_email
 smtp_server = "smtp.gmail.com"
@@ -348,6 +352,7 @@ if __name__ == '__main__':
 
     Window.fullscreen = False
 
+
     # Widget that displays camera
     class KivyCamera(Image):
         def __init__(self, capture, fps, **kwargs):
@@ -359,22 +364,116 @@ if __name__ == '__main__':
             self.flimit = 20
             self.ftime = self.flimit
             self.timer = self.tlimit
-            self.facetimer = 0
             self.squarecolor = (0, 0, 0)
             # Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
-            Clock.schedule_interval(partial(self.read_camera, ), 1.0 / fps)
+            Clock.schedule_interval(partial(self.update, ), 1.0 / fps)
 
-        def read_camera(self, *args):
-            global camtexture
-            global camthread
+        # Updates frame on camer widget
+        def update(self, *args):
 
             ret, frame = self.capture.read()
-            start_facial_recognition(ret, frame)
-            start_cam_update(ret, frame)
 
-        def updateTexture(self, testexture, buf, *args):
-            testexture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-            self.texture = testexture
+            if self.ftime is self.flimit:
+                self.ftime = 0
+                start_facial_recognition(ret, frame)
+            else:
+                self.ftime += 1
+
+            global faces, userid
+
+            temp = self.temp
+            timer = self.timer
+            tlimit = self.tlimit
+
+            if faces is not None:
+                for (x, y, w, h) in faces:
+                    if timer == tlimit:
+                        if temp == None:
+                            self.squarecolor = (0, 0, 0)
+                        elif temp > 98.6:
+                            self.timer = 0
+                            self.squarecolor = (0, 0, 255)
+                            if userid is not None:
+                                dbfunctions.newscanhist(userid, temp, False)
+                                self.start_user_mail_thread()
+                                self.start_admin_mail_thread()
+                            self.temp = None
+                            userid = None
+                            # winsound.Beep(500, 1500)
+                        elif temp <= 98.6:
+                            self.timer = 0
+                            self.squarecolor = (0, 255, 0)
+                            if userid is not None:
+                                dbfunctions.newscanhist(userid, temp, True)
+                            self.temp = None
+                            userid = None
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
+
+            if self.timer != self.tlimit:
+                self.timer += 1
+
+            if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
+                scale_percent = Window.width / frame.shape[1]
+            else:
+                scale_percent = Window.height / frame.shape[0]
+
+            width = int(frame.shape[1] * scale_percent)
+            height = int(frame.shape[0] * scale_percent)
+            dim = (width, height)
+            resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+            if ret:
+                # convert it to texture
+                buf1 = cv2.flip(resized, 0)
+                buf = buf1.tobytes()
+                image_texture = Texture.create(
+                    # size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                    size=(resized.shape[1], resized.shape[0]), colorfmt='bgr')
+
+                image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+
+                # display image from the texture
+                self.texture = image_texture
+
+        # Starts thread to send email to user
+        def start_user_mail_thread(self):
+            threading.Thread(target=self.usersendemail, args=()).start()
+
+        # Starts thread to send email to admin
+        def start_admin_mail_thread(self):
+            threading.Thread(target=self.adminsendemail, args=()).start()
+
+        # Send email to users
+        def usersendemail(self):
+            global smtp_server, sender_email, admin_email, password
+            # Create a secure SSL context
+            context = ssl.create_default_context()
+
+            usermessage = """\
+Subject: Corserva High Temperature Detected
+
+Hello """ + firstname + """ """ + lastname + """,
+
+A high temperature has been detected from the Corserva Kiosk. Please speak to nearby attendant from a manual screening."""
+
+            with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+                server.login(sender_email, password)
+                # TODO: Send email here
+                server.sendmail(sender_email, receiver_email, usermessage)
+
+        # Send email to admin/attendant
+        def adminsendemail(self):
+            global smtp_server, sender_email, admin_email, password
+            # Create a secure SSL context
+            context = ssl.create_default_context()
+            adminmessage = """\
+Subject: High Temperature Detected
+
+High Temperature has been detected from user """ + firstname + """ """ + lastname + """."""
+            with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+                server.login(sender_email, password)
+                # TODO: Send email here
+                server.sendmail(sender_email, admin_email, adminmessage)
 
         def temppass(self):
             self.temp = 96
@@ -450,8 +549,6 @@ if __name__ == '__main__':
             according to their captured time and date.
             '''
 
-            import face_recognition
-
             # logFile = open("log.txt", "a")
             # sys.stdout = logFile
             print("\n\n========================================================================================")
@@ -494,6 +591,7 @@ if __name__ == '__main__':
                         # print("File located! Executing facial pattern extraction")
 
                         # start of encoding
+                        import face_recognition
                         known_image = face_recognition.load_image_file(uploadedImageLoc + imageFile)
                         try:
                             known_face_encoding = face_recognition.face_encodings(known_image)[0]
@@ -541,51 +639,204 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             # make sure we aren't overriding any important functionality
             super(Settings_Page, self).__init__(**kwargs)
+
+            with self.canvas:
+                Color(.145, .1529, .302, 1, mode='rgba')
+                Rectangle(pos=self.pos, size=Window.size)
+
             self.registeruserbutton = Button(text="Register User",
                                              size_hint=(.5, .1),
-                                             pos_hint={'center_x': .5, 'y': .6}
+                                             pos_hint={'center_x': .5, 'y': .6},
+                                             background_color=(.4, .65, 1, 1)
                                              )
 
             self.adminemailbutton = Button(text="Change Admin Email",
                                            size_hint=(.5, .1),
-                                           pos_hint={'center_x': .5, 'y': .3}
+                                           pos_hint={'center_x': .5, 'y': .3},
+                                           background_color=(.4, .65, 1, 1),
                                            )
+
+            self.backbutton = Button(text="Back",
+                                     size_hint=(.2, .1),
+                                     pos_hint={'center_x': .8, 'y': .8},
+                                     background_color=(.4, .65, 1, 1),
+                                     )
 
             self.registeruserbutton.bind(on_press=lambda x: self.registeruserscreen())
             self.adminemailbutton.bind(on_press=lambda x: self.adminemailscreen())
+            self.backbutton.bind(on_press=lambda x: self.mainscreen())
 
             self.add_widget(self.registeruserbutton)
             self.add_widget(self.adminemailbutton)
+            self.add_widget(self.backbutton)
 
         def registeruserscreen(self):
             app.screen_manager.transition.direction = 'left'
             app.screen_manager.current = 'registeruserpage'
 
         def adminemailscreen(self):
+            app.adminemailpage.backbutton.disabled = False
             app.screen_manager.transition.direction = 'left'
             app.screen_manager.current = 'adminemailpage'
+
+        def mainscreen(self):
+            app.screen_manager.transition.direction = 'right'
+            app.screen_manager.current = 'mainpage'
 
 
     class Register_User_Page(FloatLayout):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-            textinput = TextInput(hint_text='Register User',
+
+            with self.canvas:
+                Color(.145, .1529, .302, 1, mode='rgba')
+                Rectangle(pos=self.pos, size=Window.size)
+
+            self.invalidemail = Label(text="",
+                                      markup='true',
+                                      pos_hint={'center_x': .5, 'y': .35},
+                                      )
+
+            self.submit = Button(text="Submit",
+                                 size_hint=(.5, .1),
+                                 pos_hint={'center_x': .5, 'y': .1},
+                                 background_color=(.4, .65, 1, 1),
+                                 )
+
+            self.first = TextInput(hint_text='Please enter your first name',
+                                   multiline=False,
+                                   pos_hint={'center_x': .5, 'y': .5},
+                                   size_hint=(.5, .05),
+                                   )
+            self.last = TextInput(hint_text='Please enter your last name',
                                   multiline=False,
-                                  pos_hint={'center_x': .5, 'y': .5},
+                                  pos_hint={'center_x': .5, 'y': .3},
                                   size_hint=(.5, .05),
                                   )
-            self.add_widget(textinput)
+            self.email = TextInput(hint_text='Please enter your email address',
+                                   multiline=False,
+                                   pos_hint={'center_x': .5, 'y': .7},
+                                   size_hint=(.5, .05),
+                                   )
+            self.backbutton = Button(text="Back",
+                                     size_hint=(.2, .1),
+                                     pos_hint={'center_x': .8, 'y': .8},
+                                     background_color=(.4, .65, 1, 1),
+                                     )
+
+            self.add_widget(self.invalidemail)
+            self.add_widget(self.first)
+            self.add_widget(self.last)
+            self.add_widget(self.email)
+            self.add_widget(self.submit)
+            self.add_widget(self.backbutton)
+            self.backbutton.bind(on_press=lambda x: self.gotosettings())
+            self.submit.bind(on_press=lambda x: self.submitregthread())
+
+        def submitregthread(self):
+            thread = threading.Thread(target=self.submitregistration)
+            thread.start()
+
+        def submitregistration(self):
+            first = self.first.text
+            last = self.last.text
+            email = self.email.text
+
+            is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
+                                      check_dns=True, dns_timeout=10, check_smtp=True, smtp_timeout=10,
+                                      smtp_helo_host='my.host.name', smtp_from_address='my@from.addr.ess',
+                                      smtp_debug=False)
+            if is_valid:
+                self.invalidemail.text = ""
+                dbfunctions.printuser(dbfunctions.newuser(first, last, email))
+                app.screen_manager.transition.direction = 'right'
+                app.screen_manager.current = 'mainpage'
+            else:
+                self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
+
+            self.first.text = ""
+            self.last.text = ""
+            self.email.text = ""
+
+        def gotosettings(self):
+            app.screen_manager.transition.direction = 'right'
+            app.screen_manager.current = 'settingspage'
 
 
     class Admin_Email_Page(FloatLayout):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-            textinput = TextInput(hint_text='Admin Email',
-                                  multiline=False,
-                                  pos_hint={'center_x': .5, 'y': .5},
-                                  size_hint=(.5, .05),
-                                  )
-            self.add_widget(textinput)
+
+            with self.canvas:
+                Color(.145, .1529, .302, 1, mode='rgba')
+                Rectangle(pos=self.pos, size=Window.size)
+
+            self.submit = Button(text="Submit",
+                                 size_hint=(.5, .1),
+                                 pos_hint={'center_x': .5, 'y': .1},
+                                 background_color=(.4, .65, 1, 1),
+                                 )
+
+            self.adminemail = TextInput(hint_text='Please enter in a new email for use as admin email',
+                                        multiline=False,
+                                        pos_hint={'center_x': .5, 'y': .5},
+                                        size_hint=(.5, .05),
+                                        )
+
+            self.invalidemail = Label(text="",
+                                      markup='true',
+                                      pos_hint={'center_x': .5, 'y': .35},
+                                      )
+            self.backbutton = Button(text="Back",
+                                     size_hint=(.2, .1),
+                                     pos_hint={'center_x': .8, 'y': .8},
+                                     background_color=(.4, .65, 1, 1),
+                                     )
+
+            self.add_widget(self.invalidemail)
+            self.add_widget(self.adminemail)
+            self.add_widget(self.submit)
+            self.add_widget(self.backbutton)
+            self.backbutton.bind(on_press=lambda x: self.gotosettings())
+            self.submit.bind(on_press=lambda x: self.submitadminemail())
+
+        def submitadminemail(self):
+            thread = threading.Thread(target=self.changeadminemail)
+            thread.start()
+
+        def gotosettings(self):
+            app.screen_manager.transition.direction = 'right'
+            app.screen_manager.current = 'settingspage'
+
+        def changeadminemail(self):
+            global admin_email
+            email = self.adminemail.text
+
+            if email == admin_email:
+                print("email exists")
+                self.invalidemail.text = "[color=ff3333]Email is Already in Use[/color]"
+                self.adminemail.text = ""
+                return
+
+            is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
+                                      check_dns=True, dns_timeout=10, check_smtp=True, smtp_timeout=10,
+                                      smtp_helo_host='my.host.name', smtp_from_address='my@from.addr.ess',
+                                      smtp_debug=False)
+
+            if is_valid:
+
+                self.invalidemail.text = ""
+                admin_email = email
+                file = open("config.txt", 'w')
+                file.write("admin_email = " + email)
+                file.close()
+                app.screen_manager.transition.direction = 'right'
+                app.screen_manager.current = 'mainpage'
+
+            else:
+                self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
+
+            self.adminemail.text = ""
 
     class ThermalApp(App):
         def __init__(self, **kwargs):
@@ -596,6 +847,8 @@ if __name__ == '__main__':
             global newuserid
             newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
             getadminemail()
+
+
 
             self.screen_manager = ScreenManager()
 

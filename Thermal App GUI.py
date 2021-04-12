@@ -34,6 +34,7 @@ userid = None
 faces = None
 global unknown_face_encoding
 camtexture = None
+perffacecomp = False
 
 cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
@@ -183,6 +184,7 @@ def facecomparisonpool(image):
     p = Process(facecomparison(image))
     p.start()
     p.join()
+
 # Compares detected faces to facial data in database
 def facecomparison(image):
     import face_recognition
@@ -278,12 +280,13 @@ def facialrecognition(faceCascade, _, frame):
         print("Found {0} faces!".format(len(newfaces)))
         faces = newfaces
 
-        print("Face found. Beginning comparision check....")
-        start_facial_comparison(image)
-        # threading.Thread(target=facecomparison, args=(image,)).start()
-        # facecomparison(image)
-        # For loop to compare patterns from webcam with .dat files
-        # If comparison returns true, break from for loop
+        if perffacecomp:
+            print("Face found. Beginning comparision check....")
+            start_facial_comparison(image)
+            # threading.Thread(target=facecomparison, args=(image,)).start()
+            # facecomparison(image)
+            # For loop to compare patterns from webcam with .dat files
+            # If comparison returns true, break from for loop
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -292,9 +295,6 @@ def facialrecognition(faceCascade, _, frame):
             "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
         print("========================================================================================")
         faces = None
-
-
-
 
     # Starts thread to send email to user
     def start_user_mail_thread():
@@ -761,6 +761,8 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                 dbfunctions.printuser(dbfunctions.newuser(first, last, email))
                 app.screen_manager.transition.direction = 'right'
                 app.screen_manager.current = 'mainpage'
+                global perffacecomp
+                perffacecomp = True
             else:
                 self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
 
@@ -842,6 +844,8 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                 file.close()
                 app.screen_manager.transition.direction = 'right'
                 app.screen_manager.current = 'mainpage'
+                global perffacecomp
+                perffacecomp = True
 
             else:
                 self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
@@ -857,8 +861,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             global newuserid
             newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
             getadminemail()
-
-
 
             self.screen_manager = ScreenManager()
 

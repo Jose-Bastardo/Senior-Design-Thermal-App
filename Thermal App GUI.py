@@ -58,7 +58,7 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
-def verifyadminemail():
+def verifyfirstinstall():
     dir = "config.txt"
     if (path.isfile(dir)):
         getadminemail()
@@ -200,6 +200,16 @@ def facecomparison(image):
 def facialrecognition(faceCascade, _, frame):
     global faces
 
+    # logFile = open("log.txt", "a")
+    # sys.stdout = logFile
+    print("\n\n=======================================================================================")
+    print("----------------------------------------------------------------------------------------")
+    print("Running webcam_comparision.py")
+    # Print out date and time of code execution
+    todayDate = datetime.now()
+    print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
+    print("----------------------------------------------------------------------------------------")
+
     # Read the image
     image = frame
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -216,11 +226,19 @@ def facialrecognition(faceCascade, _, frame):
     if len(newfaces) is not 0:
         print("Found {0} faces!".format(len(newfaces)))
         faces = newfaces
+
+        print("Face found. Beginning comparision check....")
         start_facial_comparison(image)
+        # threading.Thread(target=facecomparison, args=(image,)).start()
+        # facecomparison(image)
+        # For loop to compare patterns from webcam with .dat files
+        # If comparison returns true, break from for loop
+
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     else:
         print(
-            "I wasn't able to locate any faces in at least one of the images.")
+            "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
         print("========================================================================================")
         faces = None
 
@@ -527,11 +545,19 @@ class Settings_Page(FloatLayout):
                                        background_color=(.4, .65, 1, 1),
                                        )
 
+        self.backbutton = Button(text="Back",
+                                       size_hint=(.2, .1),
+                                       pos_hint={'center_x': .8, 'y': .8},
+                                       background_color=(.4, .65, 1, 1),
+                                       )
+
         self.registeruserbutton.bind(on_press=lambda x: self.registeruserscreen())
         self.adminemailbutton.bind(on_press=lambda x: self.adminemailscreen())
+        self.backbutton.bind(on_press=lambda x: self.mainscreen())
 
         self.add_widget(self.registeruserbutton)
         self.add_widget(self.adminemailbutton)
+        self.add_widget(self.backbutton)
 
     def registeruserscreen(self):
         app.screen_manager.transition.direction = 'left'
@@ -540,6 +566,10 @@ class Settings_Page(FloatLayout):
     def adminemailscreen(self):
         app.screen_manager.transition.direction = 'left'
         app.screen_manager.current = 'adminemailpage'
+
+    def mainscreen(self):
+        app.screen_manager.transition.direction = 'left'
+        app.screen_manager.current = 'mainpage'
 
 
 class Register_User_Page(FloatLayout):
@@ -576,12 +606,19 @@ class Register_User_Page(FloatLayout):
                                pos_hint={'center_x': .5, 'y': .7},
                                size_hint=(.5, .05),
                                )
+        self.backbutton = Button(text="Back",
+                                 size_hint=(.2, .1),
+                                 pos_hint={'center_x': .8, 'y': .8},
+                                 background_color=(.4, .65, 1, 1),
+                                 )
 
         self.add_widget(self.invalidemail)
         self.add_widget(self.first)
         self.add_widget(self.last)
         self.add_widget(self.email)
         self.add_widget(self.submit)
+        self.add_widget(self.backbutton)
+        self.backbutton.bind(on_press=lambda x: self.gotosettings())
         self.submit.bind(on_press=lambda x: self.submitregthread())
 
     def submitregthread(self):
@@ -609,6 +646,10 @@ class Register_User_Page(FloatLayout):
         self.last.text = ""
         self.email.text = ""
 
+    def gotosettings(self):
+        app.screen_manager.transition.direction = 'left'
+        app.screen_manager.current = 'settingspage'
+
 
 class Admin_Email_Page(FloatLayout):
     def __init__(self, **kwargs):
@@ -634,16 +675,26 @@ class Admin_Email_Page(FloatLayout):
                                   markup='true',
                                   pos_hint={'center_x': .5, 'y': .35},
                                   )
+        self.backbutton = Button(text="Back",
+                                 size_hint=(.2, .1),
+                                 pos_hint={'center_x': .8, 'y': .8},
+                                 background_color=(.4, .65, 1, 1),
+                                 )
 
         self.add_widget(self.invalidemail)
         self.add_widget(self.adminemail)
         self.add_widget(self.submit)
-
+        self.add_widget(self.backbutton)
+        self.backbutton.bind(on_press=lambda x: self.gotosettings())
         self.submit.bind(on_press=lambda x: self.submitadminemail())
 
     def submitadminemail(self):
         thread = threading.Thread(target=self.changeadminemail)
         thread.start()
+
+    def gotosettings(self):
+        app.screen_manager.transition.direction = 'left'
+        app.screen_manager.current = 'settingspage'
 
     def changeadminemail(self):
         global admin_email
@@ -686,7 +737,7 @@ class ThermalApp(App):
 
         self.screen_manager = ScreenManager()
 
-        if verifyadminemail():
+        if verifyfirstinstall():
             self.MainPage = layout()
             screen = Screen(name='mainpage')
             screen.add_widget(self.MainPage)

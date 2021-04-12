@@ -564,11 +564,12 @@ class Settings_Page(FloatLayout):
         app.screen_manager.current = 'registeruserpage'
 
     def adminemailscreen(self):
+        app.adminemailpage.backbutton.disabled = False
         app.screen_manager.transition.direction = 'left'
         app.screen_manager.current = 'adminemailpage'
 
     def mainscreen(self):
-        app.screen_manager.transition.direction = 'left'
+        app.screen_manager.transition.direction = 'right'
         app.screen_manager.current = 'mainpage'
 
 
@@ -647,7 +648,7 @@ class Register_User_Page(FloatLayout):
         self.email.text = ""
 
     def gotosettings(self):
-        app.screen_manager.transition.direction = 'left'
+        app.screen_manager.transition.direction = 'right'
         app.screen_manager.current = 'settingspage'
 
 
@@ -693,7 +694,7 @@ class Admin_Email_Page(FloatLayout):
         thread.start()
 
     def gotosettings(self):
-        app.screen_manager.transition.direction = 'left'
+        app.screen_manager.transition.direction = 'right'
         app.screen_manager.current = 'settingspage'
 
     def changeadminemail(self):
@@ -758,6 +759,8 @@ class ThermalApp(App):
             screen = Screen(name='mainpage')
             screen.add_widget(self.MainPage)
             self.screen_manager.add_widget(screen)
+
+            self.adminemailpage.backbutton.disabled = True
 
         self.settingspage = Settings_Page()
         screen = Screen(name='settingspage')

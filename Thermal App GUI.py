@@ -824,16 +824,20 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'settingspage'
             self.adminemail.text = ""
+            self.adminemailpass.text = ""
 
         def changeadminemail(self):
             global admin_email, password
             email = self.adminemail.text
             passw = self.adminemailpass.text
+            self.adminemail.text = ""
+            self.adminemailpass.text = ""
 
             if email == admin_email:
                 print("email exists")
                 self.invalidemail.text = "[color=ff3333]Email is Already in Use[/color]"
                 self.adminemail.text = ""
+                self.adminemailpass.text = ""
                 return
 
             is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
@@ -850,6 +854,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                     try:
                         server.login(email, passw)
                     except:
+
                         self.invalidemail.text = "[color=ff3333]Invalid Email and Password Combination[/color]"
                         return
                     finally:
@@ -871,6 +876,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                 self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
 
             self.adminemail.text = ""
+            self.adminemailpass.text = ""
 
 
     class ThermalApp(App):

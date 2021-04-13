@@ -1,0 +1,2 @@
+admin_email = thermalapptestemail@gmail.com
+password = 2901567j

@@ -8,3 +8,4 @@
 3. dlib
 4. face_recognition
 5. mariadb
+6. py3-validate-email

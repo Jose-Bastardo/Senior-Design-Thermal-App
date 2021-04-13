@@ -19,11 +19,10 @@ from kivy.uix.label import Label
 from validate_email import validate_email
 
 port = 465  # For SSL
-global admin_email
+admin_email = None
 smtp_server = "smtp.gmail.com"
-sender_email = "notarealemailplsignore@gmail.com"
 global receiver_email  # Enter receiver address
-password = "apesapesapes"
+password = None
 global firstname
 global lastname
 global newuserid
@@ -35,11 +34,15 @@ faces = None
 global unknown_face_encoding
 camtexture = None
 perffacecomp = False
+captureregistration = False
+cthread = None
+stop_cthread = False
 
 cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
+
 
 def verifyfirstinstall():
     dir = "config.txt"
@@ -52,7 +55,6 @@ def verifyfirstinstall():
 
 # Updates frame on camer widget
 def update(ret, frame):
-
     global faces, userid
 
     temp = app.MainPage.my_camera.temp
@@ -107,27 +109,25 @@ def update(ret, frame):
         # display image from the texture
         Clock.schedule_once(partial(app.MainPage.my_camera.updateTexture, image_texture, buf))
 
+
 # Get saved admin email from text file
 def getadminemail():
-    global admin_email
+    global admin_email, password
     dir = "config.txt"
-    if (path.isfile(dir)):
-        with open(dir) as fp:
-            line = fp.readline()
-            while line:
-                if (line.find("admin_email") >= 0):
-                    x = line.split("= ")
-                    admin_email = x[1]
-                    fp.close()
-                    break
-                else:
-                    line = fp.readline()
-    else:
-        email = "notarealemailplsignore@gmail.com"
-        file = open(dir, "w")
-        file.write("admin_email = " + email)
-        admin_email = email
-        file.close()
+    with open(dir) as fp:
+        line = fp.readline()
+        while line:
+            if (line.find("admin_email") >= 0):
+                x = line.split("= ")
+                admin_email = x[1]
+            if (line.find("password") >= 0):
+                x = line.split("= ")
+                password = x[1]
+                fp.close()
+                break
+            else:
+                line = fp.readline()
+
 
 def start_cam_update(_, frame):
     if frame is None:
@@ -137,7 +137,7 @@ def start_cam_update(_, frame):
 
     if (camthread == None):
         camthread = threading.Thread(target=update,
-                                      args=(_, frame,))
+                                     args=(_, frame,))
         camthread.start()
     elif camthread.is_alive():
         print(camthread.is_alive())
@@ -145,6 +145,7 @@ def start_cam_update(_, frame):
     else:
         camthread = threading.Thread(target=update, args=(_, frame,))
         camthread.start()
+
 
 # Start Facial Recognition Thread
 def start_facial_recognition(_, frame, ):
@@ -164,6 +165,7 @@ def start_facial_recognition(_, frame, ):
         facethread = threading.Thread(target=facialrecognition, args=(faceCascade, _, frame,))
         facethread.start()
 
+
 # Start Facial Comparison Thread
 def start_facial_comparison(image):
     global comparisonthread
@@ -180,10 +182,12 @@ def start_facial_comparison(image):
         comparisonthread = threading.Thread(target=facecomparison, args=(image,))
         comparisonthread.start()
 
+
 def facecomparisonpool(image):
     p = Process(facecomparison(image))
     p.start()
     p.join()
+
 
 # Compares detected faces to facial data in database
 def facecomparison(image):
@@ -220,7 +224,7 @@ def facecomparison(image):
     if faces is not None:
         unknown_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # the facial embeddings for face in input
-        #unknown_image = face_recognition.face_encodings(rgb)
+        # unknown_image = face_recognition.face_encodings(rgb)
 
         try:
             unknown_face_encoding = face_recognition.face_encodings(unknown_image)
@@ -229,7 +233,7 @@ def facecomparison(image):
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
             print("========================================================================================")
             return
-'''
+
         data = dbfunctions.returnallfaces()
         for d in data:
             randnum = str(randomNum(20))
@@ -247,21 +251,11 @@ def facecomparison(image):
                 userid = d[0]
                 firstname, lastname, receiver_email = dbfunctions.returnuser(userid)
                 break
-'''
+
 
 # Recognizes faces from captured frame
 def facialrecognition(faceCascade, _, frame):
     global faces
-
-    # logFile = open("log.txt", "a")
-    # sys.stdout = logFile
-    print("\n\n=======================================================================================")
-    print("----------------------------------------------------------------------------------------")
-    print("Running webcam_comparision.py")
-    # Print out date and time of code execution
-    todayDate = datetime.now()
-    print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
-    print("----------------------------------------------------------------------------------------")
 
     # Read the image
     image = frame
@@ -291,56 +285,7 @@ def facialrecognition(faceCascade, _, frame):
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     else:
-        print(
-            "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
-        print("========================================================================================")
         faces = None
-
-    # Starts thread to send email to user
-    def start_user_mail_thread():
-        threading.Thread(target=usersendemail, args=()).start()
-
-    # Starts thread to send email to admin
-    def start_admin_mail_thread():
-        threading.Thread(target=adminsendemail, args=()).start()
-
-    # Send email to users
-    def usersendemail():
-        global smtp_server, sender_email, admin_email, password
-        # Create a secure SSL context
-        context = ssl.create_default_context()
-
-        usermessage = """\
-Subject: Corserva High Temperature Detected
-
-Hello """ + firstname + """ """ + lastname + """,
-
-A high temperature has been detected from the Corserva Kiosk. Please speak to nearby attendant from a manual screening."""
-
-        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-            server.login(sender_email, password)
-            # TODO: Send email here
-            server.sendmail(sender_email, receiver_email, usermessage)
-
-    # Send email to admin/attendant
-    def adminsendemail(self):
-        global smtp_server, sender_email, admin_email, password
-        # Create a secure SSL context
-        context = ssl.create_default_context()
-        adminmessage = """\
-Subject: High Temperature Detected
-
-High Temperature has been detected from user """ + firstname + """ """ + lastname + """."""
-        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-            server.login(sender_email, password)
-            # TODO: Send email here
-            server.sendmail(sender_email, admin_email, adminmessage)
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -375,17 +320,17 @@ if __name__ == '__main__':
             self.ftime = self.flimit
             self.timer = self.tlimit
             self.squarecolor = (0, 0, 0)
-            # Clock.schedule_interval(partial(self.start_facial_recognition, faceCascade), 1.0 / fps)
+            self.frame = None
             Clock.schedule_interval(partial(self.update, ), 1.0 / fps)
 
         # Updates frame on camer widget
         def update(self, *args):
 
-            ret, frame = self.capture.read()
+            ret, self.frame = self.capture.read()
 
             if self.ftime is self.flimit:
                 self.ftime = 0
-                start_facial_recognition(ret, frame)
+                start_facial_recognition(ret, self.frame)
             else:
                 self.ftime += 1
 
@@ -397,40 +342,41 @@ if __name__ == '__main__':
 
             if faces is not None:
                 for (x, y, w, h) in faces:
-                    if timer == tlimit:
-                        if temp == None:
-                            self.squarecolor = (0, 0, 0)
-                        elif temp > 98.6:
-                            self.timer = 0
-                            self.squarecolor = (0, 0, 255)
-                            if userid is not None:
-                                dbfunctions.newscanhist(userid, temp, False)
-                                self.start_user_mail_thread()
-                                self.start_admin_mail_thread()
-                            self.temp = None
-                            userid = None
-                            # winsound.Beep(500, 1500)
-                        elif temp <= 98.6:
-                            self.timer = 0
-                            self.squarecolor = (0, 255, 0)
-                            if userid is not None:
-                                dbfunctions.newscanhist(userid, temp, True)
-                            self.temp = None
-                            userid = None
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), self.squarecolor, 2)
+                    if not captureregistration:
+                        if timer == tlimit:
+                            if temp == None:
+                                self.squarecolor = (0, 0, 0)
+                            elif temp > 98.6:
+                                self.timer = 0
+                                self.squarecolor = (0, 0, 255)
+                                if userid is not None:
+                                    dbfunctions.newscanhist(userid, temp, False)
+                                    self.start_user_mail_thread()
+                                    self.start_admin_mail_thread()
+                                self.temp = None
+                                userid = None
+                                # winsound.Beep(500, 1500)
+                            elif temp <= 98.6:
+                                self.timer = 0
+                                self.squarecolor = (0, 255, 0)
+                                if userid is not None:
+                                    dbfunctions.newscanhist(userid, temp, True)
+                                self.temp = None
+                                userid = None
+                    cv2.rectangle(self.frame, (x, y), (x + w, y + h), self.squarecolor, 2)
 
             if self.timer != self.tlimit:
                 self.timer += 1
 
-            if Window.height - frame.shape[0] > Window.width - frame.shape[1]:
-                scale_percent = Window.width / frame.shape[1]
+            if Window.height - self.frame.shape[0] > Window.width - self.frame.shape[1]:
+                scale_percent = Window.width / self.frame.shape[1]
             else:
-                scale_percent = Window.height / frame.shape[0]
+                scale_percent = Window.height / self.frame.shape[0]
 
-            width = int(frame.shape[1] * scale_percent)
-            height = int(frame.shape[0] * scale_percent)
+            width = int(self.frame.shape[1] * scale_percent)
+            height = int(self.frame.shape[0] * scale_percent)
             dim = (width, height)
-            resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+            resized = cv2.resize(self.frame, dim, interpolation=cv2.INTER_AREA)
 
             if ret:
                 # convert it to texture
@@ -455,7 +401,7 @@ if __name__ == '__main__':
 
         # Send email to users
         def usersendemail(self):
-            global smtp_server, sender_email, admin_email, password
+            global smtp_server, admin_email, password
             # Create a secure SSL context
             context = ssl.create_default_context()
 
@@ -467,13 +413,13 @@ Hello """ + firstname + """ """ + lastname + """,
 A high temperature has been detected from the Corserva Kiosk. Please speak to nearby attendant from a manual screening."""
 
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                server.login(sender_email, password)
+                server.login(admin_email, password)
                 # TODO: Send email here
-                server.sendmail(sender_email, receiver_email, usermessage)
+                server.sendmail(admin_email, receiver_email, usermessage)
 
         # Send email to admin/attendant
         def adminsendemail(self):
-            global smtp_server, sender_email, admin_email, password
+            global smtp_server, admin_email, password
             # Create a secure SSL context
             context = ssl.create_default_context()
             adminmessage = """\
@@ -481,9 +427,109 @@ Subject: High Temperature Detected
 
 High Temperature has been detected from user """ + firstname + """ """ + lastname + """."""
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                server.login(sender_email, password)
+                server.login(admin_email, password)
                 # TODO: Send email here
-                server.sendmail(sender_email, admin_email, adminmessage)
+                server.sendmail(admin_email, admin_email, adminmessage)
+
+        def start_capture_thread(self, first, last, email):
+            global cthread
+            cthread = threading.Thread(target=self.capturefunc, args=(first, last, email))
+            cthread.start()
+
+        def capturefunc(self, first, last, email):
+            global stop_cthread
+            print("Started Capture Thread")
+            app.MainPage.textlabel.text = "Please Face Camera"
+            # logFile = open("log.txt", "a")
+            # sys.stdout = logFile
+            i = 5
+            time.sleep(2)
+            for x in range(5):
+                if stop_cthread:
+                    app.screen_manager.transition.direction = 'right'
+                    app.screen_manager.current = 'registeruserpage'
+                    app.MainPage.textlabel.text = ""
+                    app.MainPage.add_widget(app.MainPage.lowtemp)
+                    app.MainPage.add_widget(app.MainPage.notemp)
+                    app.MainPage.add_widget(app.MainPage.hightemp)
+                    app.MainPage.remove_widget(app.MainPage.backbutton)
+                    app.MainPage.add_widget(app.MainPage.settingsbutton)
+                    return
+
+                app.MainPage.textlabel.text = "[color=ffffff]" + str(i) + "[/color]"
+                i -= 1
+                time.sleep(1)
+
+            if stop_cthread:
+                app.screen_manager.transition.direction = 'right'
+                app.screen_manager.current = 'registeruserpage'
+                app.MainPage.textlabel.text = ""
+                app.MainPage.add_widget(app.MainPage.lowtemp)
+                app.MainPage.add_widget(app.MainPage.notemp)
+                app.MainPage.add_widget(app.MainPage.hightemp)
+                app.MainPage.remove_widget(app.MainPage.backbutton)
+                app.MainPage.add_widget(app.MainPage.settingsbutton)
+                return
+
+            app.MainPage.textlabel.text = "[color=ffffff]Starting Capture[/color]"
+
+            if faces is None:
+                app.MainPage.textlabel.text = "[color=ffffff]Face not Found[/color]"
+                time.sleep(2)
+                self.start_capture_thread(first, last, email)
+                return
+            else:
+                ret, frame = self.capture.read()
+
+                # Create random number based on specified length of n
+                def randomNum(n):
+                    min = pow(10, n - 1)
+                    max = pow(10, n) - 1
+                    return random.randint(min, max)
+
+                datFolderLoc = "./Face_Recognition/dat"
+                datExtension = ".dat"
+                datFileName = str(randomNum(5))
+
+                import face_recognition
+                known_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                try:
+                    known_face_encoding = face_recognition.face_encodings(known_image)[0]
+                except IndexError:
+                    print(
+                        "I wasn't able to locate any faces in at least one of the images.")
+                    return
+
+                # Save encoding as .dat file
+
+                with open(datFolderLoc + datFileName + datExtension, 'wb') as f:
+                    pickle.dump(known_face_encoding, f)
+                    print("Saved pattern data as " + datFileName + " under dat folder.")
+
+                global newuserid
+
+                dbfunctions.insertfacedb(dbfunctions.newuser(first, last, email),
+                                         datFolderLoc + datFileName + datExtension)
+
+                os.remove(datFolderLoc + datFileName + datExtension)
+
+                print("SUCCESS: Patterns extraction completed. Terminiating program.")
+                print("========================================================================================")
+
+                app.screen_manager.transition.direction = 'left'
+                app.screen_manager.current = 'successpage'
+                time.sleep(5)
+                app.MainPage.textlabel.text = ""
+                app.MainPage.add_widget(app.MainPage.lowtemp)
+                app.MainPage.add_widget(app.MainPage.notemp)
+                app.MainPage.add_widget(app.MainPage.hightemp)
+                app.MainPage.remove_widget(app.MainPage.backbutton)
+                app.MainPage.add_widget(app.MainPage.settingsbutton)
+                app.screen_manager.transition.direction = 'left'
+                app.screen_manager.current = 'mainpage'
+
+                global perffacecomp
+                perffacecomp = True
 
         def temppass(self):
             self.temp = 96
@@ -504,11 +550,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             self.my_camera = KivyCamera(capture=self.capture, fps=30, size=Window.size)
             self.add_widget(self.my_camera)
 
-            self.capturebutton = Button(text="Capture",
-                                        size_hint=(.5, .1),
-                                        pos_hint={'center_x': .5, 'y': .1},
-                                        )
-
             self.settingsbutton = Button(background_normal='assets\settingsbuttonimage.png',
                                          # background_down='assets\settingsbuttonpressed.png',
                                          size_hint=(.2, .2),
@@ -526,18 +567,37 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                                    size_hint=(.2, .1),
                                    pos_hint={'center_x': .8, 'y': 0},
                                    )
+            self.textlabel = Label(text="",
+                                   markup=True,
+                                   pos_hint={'center_x': .5, 'y': .4},
+                                   font_size="20sp",
+                                   )
+
+            self.backbutton = Button(text="Back",
+                                     size_hint=(.2, .1),
+                                     pos_hint={'center_x': .8, 'y': .8},
+                                     background_color=(.4, .65, 1, 1),
+                                     )
 
             self.lowtemp.bind(on_press=lambda x: self.my_camera.temppass())
             self.notemp.bind(on_press=lambda x: self.my_camera.tempnone())
             self.hightemp.bind(on_press=lambda x: self.my_camera.tempfail())
-            self.capturebutton.bind(on_press=lambda x: self.capturebtn())
             self.settingsbutton.bind(on_press=lambda x: self.gotosettings())
+            self.backbutton.bind(on_press=lambda x: self.gobackthread())
 
+            self.add_widget(self.textlabel)
             self.add_widget(self.lowtemp)
             self.add_widget(self.notemp)
             self.add_widget(self.hightemp)
-            self.add_widget(self.capturebutton)
             self.add_widget(self.settingsbutton)
+
+        def gobackthread(self):
+            threading.Thread(target=self.goback, ).start()
+
+        def goback(self):
+            global stop_cthread, cthread
+            stop_cthread = True
+            cthread.join()
 
         # Transitions to user registration page
         def gotosettings(self):
@@ -549,102 +609,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
         def on_stop(self):
             # without this, app will not exit even if the window is closed
             self.capture.release()
-
-        # Starts thread to capture facial data
-        def start_capture_thread(self, *args):
-            threading.Thread(target=self.capturebtn, args=()).start()
-
-        # Function to capture facial data from camera feed
-        def capturebtn(self):
-            '''
-            Function to capture the images and give them the names
-            according to their captured time and date.
-            '''
-
-            # logFile = open("log.txt", "a")
-            # sys.stdout = logFile
-            print("\n\n========================================================================================")
-            print("----------------------------------------------------------------------------------------")
-
-            timestr = time.strftime("%Y%m%d_%H%M%S")
-            ret, frame = self.capture.read()
-            cv2.imwrite("Face_Recognition/extract/IMG_{}.png".format(timestr), frame)
-            print("Captured")
-
-            uploadedImageLoc = 'Face_Recognition/extract/'
-            datFolderLoc = 'Face_Recognition/dat/'
-
-            # Create random number based on specified length of n
-            def randomNum(n):
-                min = pow(10, n - 1)
-                max = pow(10, n) - 1
-                return random.randint(min, max)
-
-            # Create or open log.txt to be written
-            print("\n\n========================================================================================")
-            print("----------------------------------------------------------------------------------------")
-            print("Running uploaded images' patterns extraction")
-            # Print out date and time of code execution
-            todayDate = datetime.now()
-            print("Date and time of code execution:", todayDate.strftime("%m/%d/%Y %I:%M:%S %p"))
-            print("----------------------------------------------------------------------------------------")
-
-            # Check if upload folder directory is valid
-            if (path.exists(uploadedImageLoc) == False):
-                print('Folder path does not exists. Terminating program....')
-
-            else:
-                # For loop to read images on uploadedImages folder
-                for imageFile in os.listdir(uploadedImageLoc):
-                    print("Loading image:", imageFile)
-
-                    # checks if the file does exists
-                    if os.path.isfile(uploadedImageLoc + imageFile):
-                        # print("File located! Executing facial pattern extraction")
-
-                        # start of encoding
-                        import face_recognition
-                        known_image = face_recognition.load_image_file(uploadedImageLoc + imageFile)
-                        try:
-                            known_face_encoding = face_recognition.face_encodings(known_image)[0]
-                        except IndexError:
-                            print(
-                                "I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
-                            sys.stdout.close()
-                            return
-
-                        known_faces = [
-                            known_face_encoding
-                        ]
-
-                        # Save encoding as .dat file
-                        fileLength = len(imageFile) - 4
-                        datExtension = ".dat"
-                        if (fileLength <= 0):
-                            print("ERROR! File naming failed! Terminating program....")
-                            sys.stdout.close()
-
-                        else:
-                            # Generate a random 20 number code for reservation ID
-                            datFileName = str(randomNum(20))
-                            with open(datFolderLoc + datFileName + datExtension, 'wb') as f:
-                                pickle.dump(known_faces, f)
-                                print("Saved pattern data as " + datFileName + " under dat folder.")
-
-                            global newuserid
-
-                            dbfunctions.insertfacedb(newuserid, datFolderLoc + datFileName + datExtension)
-
-                            os.remove(datFolderLoc + datFileName + datExtension)
-
-                        os.remove(uploadedImageLoc + imageFile)
-
-                    else:
-                        print("Image doesn't exist! Terminating program....")
-                        print(
-                            "========================================================================================")
-                print("SUCCESS: Patterns extraction completed. Terminiating program.")
-                print("========================================================================================")
 
 
     class Settings_Page(FloatLayout):
@@ -755,18 +719,27 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             first = self.first.text
             last = self.last.text
             email = self.email.text
+            empty = ""
 
             is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
                                       check_dns=True, dns_timeout=10, check_smtp=True, smtp_timeout=10,
                                       smtp_helo_host='my.host.name', smtp_from_address='my@from.addr.ess',
                                       smtp_debug=False)
-            if is_valid:
+            if first is empty or last is empty or email is empty:
+                self.invalidemail.text = "[color=ff3333]Please Enter All Fields[/color]"
+            elif is_valid:
                 self.invalidemail.text = ""
-                dbfunctions.printuser(dbfunctions.newuser(first, last, email))
-                app.screen_manager.transition.direction = 'right'
+                app.MainPage.my_camera.squarecolor = (0, 0, 0)
+                app.MainPage.remove_widget(app.MainPage.settingsbutton)
+                app.MainPage.remove_widget(app.MainPage.lowtemp)
+                app.MainPage.remove_widget(app.MainPage.notemp)
+                app.MainPage.remove_widget(app.MainPage.hightemp)
+                app.MainPage.add_widget(app.MainPage.backbutton)
+                global stop_cthread
+                stop_cthread = False
+                app.screen_manager.transition.direction = 'left'
                 app.screen_manager.current = 'mainpage'
-                global perffacecomp
-                perffacecomp = True
+                app.MainPage.my_camera.start_capture_thread(first, last, email)
             else:
                 self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
 
@@ -777,6 +750,26 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
         def gotosettings(self):
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'settingspage'
+            self.first.text = ""
+            self.last.text = ""
+            self.email.text = ""
+
+
+    class Reg_Success_Page(FloatLayout):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+            with self.canvas:
+                Color(.145, .1529, .302, 1, mode='rgba')
+                Rectangle(pos=self.pos, size=Window.size)
+
+            self.sucesstext = Label(text="[color=ffffff]Registration Successful[/color]",
+                                    markup='true',
+                                    pos_hint={'center_x': .5, 'y': 0},
+                                    font_size="30sp",
+                                    )
+
+            self.add_widget(self.sucesstext)
 
 
     class Admin_Email_Page(FloatLayout):
@@ -795,9 +788,15 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             self.adminemail = TextInput(hint_text='Please enter in a new email for use as admin email',
                                         multiline=False,
-                                        pos_hint={'center_x': .5, 'y': .5},
+                                        pos_hint={'center_x': .5, 'y': .6},
                                         size_hint=(.5, .05),
                                         )
+            self.adminemailpass = TextInput(hint_text='Please enter password for email account',
+                                            multiline=False,
+                                            pos_hint={'center_x': .5, 'y': .4},
+                                            size_hint=(.5, .05),
+                                            password=True
+                                            )
 
             self.invalidemail = Label(text="",
                                       markup='true',
@@ -810,6 +809,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                                      )
 
             self.add_widget(self.invalidemail)
+            self.add_widget(self.adminemailpass)
             self.add_widget(self.adminemail)
             self.add_widget(self.submit)
             self.add_widget(self.backbutton)
@@ -823,10 +823,12 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
         def gotosettings(self):
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'settingspage'
+            self.adminemail.text = ""
 
         def changeadminemail(self):
-            global admin_email
+            global admin_email, password
             email = self.adminemail.text
+            passw = self.adminemailpass.text
 
             if email == admin_email:
                 print("email exists")
@@ -841,10 +843,24 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             if is_valid:
 
+                global smtp_server
+                # Create a secure SSL context
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+                    try:
+                        server.login(email, passw)
+                    except:
+                        self.invalidemail.text = "[color=ff3333]Invalid Email and Password Combination[/color]"
+                        return
+                    finally:
+                        server.quit()
+
                 self.invalidemail.text = ""
                 admin_email = email
+                password = passw
                 file = open("config.txt", 'w')
-                file.write("admin_email = " + email)
+                file.write("admin_email = " + email + "\n")
+                file.write("password = " + passw + "\n")
                 file.close()
                 app.screen_manager.transition.direction = 'right'
                 app.screen_manager.current = 'mainpage'
@@ -856,6 +872,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             self.adminemail.text = ""
 
+
     class ThermalApp(App):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
@@ -863,9 +880,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             global perffacecomp
 
             dbfunctions.deletedb()
-            global newuserid
-            newuserid = dbfunctions.newuser("john", "smith", "notarealemailplsignore@gmail.com")
-            getadminemail()
 
             if verifyfirstinstall():
                 self.MainPage = layout()
@@ -905,8 +919,14 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             screen.add_widget(self.userregistrationpage)
             self.screen_manager.add_widget(screen)
 
+            self.successpage = Reg_Success_Page()
+            screen = Screen(name='successpage')
+            screen.add_widget(self.successpage)
+            self.screen_manager.add_widget(screen)
+
         def build(self):
             return self.screen_manager
+
 
     app = ThermalApp()
     app.run()

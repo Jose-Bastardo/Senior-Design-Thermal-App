@@ -20,6 +20,8 @@ from validate_email import validate_email
 
 port = 465  # For SSL
 admin_email = None
+sender_email = "thermalappnotification@gmail.com"
+sender_password = "2901567j"
 smtp_server = "smtp.gmail.com"
 global receiver_email  # Enter receiver address
 password = None
@@ -65,7 +67,7 @@ def update(ret, frame):
         for (x, y, w, h) in faces:
             if timer == tlimit:
                 if temp == None:
-                    squarecolor = (0, 0, 0)
+                    app.MainPage.my_camera.squarecolor = (0, 0, 0)
                 elif temp > 98.6:
                     app.MainPage.my_camera.timer = 0
                     app.MainPage.my_camera.squarecolor = (0, 0, 255)
@@ -120,9 +122,6 @@ def getadminemail():
             if (line.find("admin_email") >= 0):
                 x = line.split("= ")
                 admin_email = x[1]
-            if (line.find("password") >= 0):
-                x = line.split("= ")
-                password = x[1]
                 fp.close()
                 break
             else:
@@ -413,9 +412,9 @@ Hello """ + firstname + """ """ + lastname + """,
 A high temperature has been detected from the Corserva Kiosk. Please speak to nearby attendant from a manual screening."""
 
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                server.login(admin_email, password)
+                server.login(sender_email, sender_password)
                 # TODO: Send email here
-                server.sendmail(admin_email, receiver_email, usermessage)
+                server.sendmail(sender_email, receiver_email, usermessage)
 
         # Send email to admin/attendant
         def adminsendemail(self):
@@ -427,9 +426,9 @@ Subject: High Temperature Detected
 
 High Temperature has been detected from user """ + firstname + """ """ + lastname + """."""
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                server.login(admin_email, password)
+                server.login(sender_email, sender_password)
                 # TODO: Send email here
-                server.sendmail(admin_email, admin_email, adminmessage)
+                server.sendmail(sender_email, admin_email, adminmessage)
 
         def start_capture_thread(self, first, last, email):
             global cthread
@@ -440,8 +439,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             global stop_cthread
             print("Started Capture Thread")
             app.MainPage.textlabel.text = "Please Face Camera"
-            # logFile = open("log.txt", "a")
-            # sys.stdout = logFile
+
             i = 5
             time.sleep(2)
             for x in range(5):
@@ -788,7 +786,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             self.adminemail = TextInput(hint_text='Please enter in a new email for use as admin email',
                                         multiline=False,
-                                        pos_hint={'center_x': .5, 'y': .6},
+                                        pos_hint={'center_x': .5, 'y': .5},
                                         size_hint=(.5, .05),
                                         )
             self.adminemailpass = TextInput(hint_text='Please enter password for email account',
@@ -809,7 +807,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                                      )
 
             self.add_widget(self.invalidemail)
-            self.add_widget(self.adminemailpass)
             self.add_widget(self.adminemail)
             self.add_widget(self.submit)
             self.add_widget(self.backbutton)
@@ -824,20 +821,16 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'settingspage'
             self.adminemail.text = ""
-            self.adminemailpass.text = ""
 
         def changeadminemail(self):
             global admin_email, password
             email = self.adminemail.text
-            passw = self.adminemailpass.text
             self.adminemail.text = ""
-            self.adminemailpass.text = ""
 
             if email == admin_email:
                 print("email exists")
                 self.invalidemail.text = "[color=ff3333]Email is Already in Use[/color]"
                 self.adminemail.text = ""
-                self.adminemailpass.text = ""
                 return
 
             is_valid = validate_email(email_address=email, check_format=True, check_blacklist=True,
@@ -847,25 +840,10 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             if is_valid:
 
-                global smtp_server
-                # Create a secure SSL context
-                context = ssl.create_default_context()
-                with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                    try:
-                        server.login(email, passw)
-                    except:
-
-                        self.invalidemail.text = "[color=ff3333]Invalid Email and Password Combination[/color]"
-                        return
-                    finally:
-                        server.quit()
-
                 self.invalidemail.text = ""
                 admin_email = email
-                password = passw
                 file = open("config.txt", 'w')
                 file.write("admin_email = " + email + "\n")
-                file.write("password = " + passw + "\n")
                 file.close()
                 app.screen_manager.transition.direction = 'right'
                 app.screen_manager.current = 'mainpage'
@@ -876,7 +854,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                 self.invalidemail.text = "[color=ff3333]Please Enter a Valid Email Address[/color]"
 
             self.adminemail.text = ""
-            self.adminemailpass.text = ""
 
 
     class ThermalApp(App):

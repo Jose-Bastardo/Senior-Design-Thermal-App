@@ -1,2 +1,1 @@
-admin_email = thermalapptestemail@gmail.com
-password = 2901567j
+admin_email = notarealemailplsignore@gmail.com

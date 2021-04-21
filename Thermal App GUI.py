@@ -15,6 +15,7 @@ import smtplib, ssl
 
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.vertex_instructions import Rectangle
+from kivy.uix import slider
 from kivy.uix.label import Label
 from validate_email import validate_email
 
@@ -41,6 +42,7 @@ cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
+
 def verifyfirstinstall():
     dir = "config.txt"
     if (path.isfile(dir)):
@@ -52,7 +54,6 @@ def verifyfirstinstall():
 
 # Updates frame on camer widget
 def update(ret, frame):
-
     global faces, userid
 
     temp = app.MainPage.my_camera.temp
@@ -107,6 +108,7 @@ def update(ret, frame):
         # display image from the texture
         Clock.schedule_once(partial(app.MainPage.my_camera.updateTexture, image_texture, buf))
 
+
 # Get saved admin email from text file
 def getadminemail():
     global admin_email
@@ -129,6 +131,7 @@ def getadminemail():
         admin_email = email
         file.close()
 
+
 def start_cam_update(_, frame):
     if frame is None:
         return
@@ -137,7 +140,7 @@ def start_cam_update(_, frame):
 
     if (camthread == None):
         camthread = threading.Thread(target=update,
-                                      args=(_, frame,))
+                                     args=(_, frame,))
         camthread.start()
     elif camthread.is_alive():
         print(camthread.is_alive())
@@ -145,6 +148,7 @@ def start_cam_update(_, frame):
     else:
         camthread = threading.Thread(target=update, args=(_, frame,))
         camthread.start()
+
 
 # Start Facial Recognition Thread
 def start_facial_recognition(_, frame, ):
@@ -164,6 +168,7 @@ def start_facial_recognition(_, frame, ):
         facethread = threading.Thread(target=facialrecognition, args=(faceCascade, _, frame,))
         facethread.start()
 
+
 # Start Facial Comparison Thread
 def start_facial_comparison(image):
     global comparisonthread
@@ -180,10 +185,12 @@ def start_facial_comparison(image):
         comparisonthread = threading.Thread(target=facecomparison, args=(image,))
         comparisonthread.start()
 
+
 def facecomparisonpool(image):
     p = Process(facecomparison(image))
     p.start()
     p.join()
+
 
 # Compares detected faces to facial data in database
 def facecomparison(image):
@@ -220,7 +227,7 @@ def facecomparison(image):
     if faces is not None:
         unknown_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # the facial embeddings for face in input
-        #unknown_image = face_recognition.face_encodings(rgb)
+        # unknown_image = face_recognition.face_encodings(rgb)
 
         try:
             unknown_face_encoding = face_recognition.face_encodings(unknown_image)
@@ -229,6 +236,8 @@ def facecomparison(image):
                 "I wasn't able to locate any faces in at least one of the images. Check the image files. Terminating program....")
             print("========================================================================================")
             return
+
+
 '''
         data = dbfunctions.returnallfaces()
         for d in data:
@@ -248,6 +257,7 @@ def facecomparison(image):
                 firstname, lastname, receiver_email = dbfunctions.returnuser(userid)
                 break
 '''
+
 
 # Recognizes faces from captured frame
 def facialrecognition(faceCascade, _, frame):
@@ -335,12 +345,6 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             server.login(sender_email, password)
             # TODO: Send email here
             server.sendmail(sender_email, admin_email, adminmessage)
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -664,9 +668,15 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             self.adminemailbutton = Button(text="Change Admin Email",
                                            size_hint=(.5, .1),
-                                           pos_hint={'center_x': .5, 'y': .3},
+                                           pos_hint={'center_x': .5, 'y': .4},
                                            background_color=(.4, .65, 1, 1),
                                            )
+
+            self.thresholdsettings = Button(text="Change Temperature Threshold Settings",
+                                            size_hint=(.5, .1),
+                                            pos_hint={'center_x': .5, 'y': .2},
+                                            background_color=(.4, .65, 1, 1),
+                                            )
 
             self.backbutton = Button(text="Back",
                                      size_hint=(.2, .1),
@@ -677,10 +687,12 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             self.registeruserbutton.bind(on_press=lambda x: self.registeruserscreen())
             self.adminemailbutton.bind(on_press=lambda x: self.adminemailscreen())
             self.backbutton.bind(on_press=lambda x: self.mainscreen())
+            self.thresholdsettings.bind(on_press=lambda x: self.thresholdsettingsscreen())
 
             self.add_widget(self.registeruserbutton)
             self.add_widget(self.adminemailbutton)
             self.add_widget(self.backbutton)
+            self.add_widget(self.thresholdsettings)
 
         def registeruserscreen(self):
             app.screen_manager.transition.direction = 'left'
@@ -696,6 +708,10 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             perffacecomp = True
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'mainpage'
+
+        def thresholdsettingsscreen(self):
+            app.screen_manager.transition.direction = 'left'
+            app.screen_manager.current = 'thresholdsettingspage'
 
 
     class Register_User_Page(FloatLayout):
@@ -856,6 +872,46 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
             self.adminemail.text = ""
 
+
+    class Threshold_Settings_Page(FloatLayout):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+            with self.canvas:
+                Color(.145, .1529, .302, 1, mode='rgba')
+                Rectangle(pos=self.pos, size=Window.size)
+
+            global temperaturethreshold
+
+            from kivy.uix.slider import Slider
+            self.slider = Slider(value_track=True, value_track_color=[1, 0, 0, 1], min=90, max=110, value=98.6)
+
+            self.submit = Button(text="Update Temperature Threshold",
+                                 size_hint=(.5, .1),
+                                 pos_hint={'center_x': .5, 'y': .1},
+                                 background_color=(.4, .65, 1, 1),
+                                 )
+
+            self.sliderlabel = Label(text="98.6",
+                                      markup='true',
+                                      pos_hint={'center_x': .5, 'y': .35},
+                                      )
+
+            self.add_widget(self.submit)
+            self.add_widget(self.slider)
+            self.add_widget(self.sliderlabel)
+            self.submit.bind(on_press=lambda x: self.submitthreshold())
+            self.slider.bind(value=self.on_value_change)
+
+        def on_value_change(self, instance, value):
+            self.sliderlabel.text = str(value)
+
+        def submitthreshold(self):
+            self.slider.value = temperaturethreshold
+            app.screen_manager.transition.direction = 'right'
+            app.screen_manager.current = 'settingspage'
+
+
     class ThermalApp(App):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
@@ -900,6 +956,11 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             screen.add_widget(self.settingspage)
             self.screen_manager.add_widget(screen)
 
+            self.thresholdsettingspage = Threshold_Settings_Page()
+            screen = Screen(name='thresholdsettingspage')
+            screen.add_widget(self.thresholdsettingspage)
+            self.screen_manager.add_widget(screen)
+
             self.userregistrationpage = Register_User_Page()
             screen = Screen(name='registeruserpage')
             screen.add_widget(self.userregistrationpage)
@@ -907,6 +968,7 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
 
         def build(self):
             return self.screen_manager
+
 
     app = ThermalApp()
     app.run()

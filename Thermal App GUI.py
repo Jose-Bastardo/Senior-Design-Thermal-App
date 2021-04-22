@@ -28,6 +28,7 @@ password = "apesapesapes"
 global firstname
 global lastname
 global newuserid
+threshold = 1
 facethread = None
 camthread = None
 comparisonthread = None
@@ -881,10 +882,21 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                 Color(.145, .1529, .302, 1, mode='rgba')
                 Rectangle(pos=self.pos, size=Window.size)
 
-            global temperaturethreshold
+            global threshold
 
             from kivy.uix.slider import Slider
-            self.slider = Slider(value_track=True, value_track_color=[1, 0, 0, 1], min=90, max=110, value=98.6)
+            self.slider = Slider(value_track=True,
+                                 value_track_color=[1, 0, 0, 1],
+                                 min=1,
+                                 max=10,
+                                 step=1,
+                                 value=threshold*10,
+                                 #sensitivity='handle',
+                                 background_width=1,
+                                 padding=0,
+                                 size_hint=(0.8, .2),
+                                 pos_hint={'center_x': .5, 'y': .45}
+                                 )
 
             self.submit = Button(text="Update Temperature Threshold",
                                  size_hint=(.5, .1),
@@ -892,10 +904,10 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
                                  background_color=(.4, .65, 1, 1),
                                  )
 
-            self.sliderlabel = Label(text="98.6",
-                                      markup='true',
-                                      pos_hint={'center_x': .5, 'y': .35},
-                                      )
+            self.sliderlabel = Label(text=str(threshold*10),
+                                     markup='true',
+                                     pos_hint={'center_x': .5, 'y': .35},
+                                     )
 
             self.add_widget(self.submit)
             self.add_widget(self.slider)
@@ -904,10 +916,11 @@ High Temperature has been detected from user """ + firstname + """ """ + lastnam
             self.slider.bind(value=self.on_value_change)
 
         def on_value_change(self, instance, value):
-            self.sliderlabel.text = str(value)
+            self.sliderlabel.text = str(self.slider.value)
 
         def submitthreshold(self):
-            self.slider.value = temperaturethreshold
+            global threshold
+            threshold = self.slider.value/10
             app.screen_manager.transition.direction = 'right'
             app.screen_manager.current = 'settingspage'
 

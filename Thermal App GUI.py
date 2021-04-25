@@ -1,6 +1,5 @@
 import threading
 from multiprocessing.context import Process
-
 import cv2
 import dlib
 import winsound
@@ -37,12 +36,14 @@ perffacecomp = False
 captureregistration = False
 cthread = None
 stop_cthread = False
+from kivy.core.window import Window
 
 cascPath = "Face_Recognition/haarcascade_frontalface_default.xml"
 
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(cascPath)
 
+Window.fullscreen = True
 
 def verifyfirstinstall():
     dir = "config.txt"
@@ -305,7 +306,7 @@ if __name__ == '__main__':
     from kivy.uix.screenmanager import ScreenManager, Screen
     from kivy.uix.textinput import TextInput
 
-    Window.fullscreen = False
+    Window.fullscreen = True
 
 
     # Widget that displays camera

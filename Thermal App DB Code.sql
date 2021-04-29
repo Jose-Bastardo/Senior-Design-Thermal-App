@@ -1,7 +1,3 @@
-user: admin
-Endpoint: thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com
-password: 2901567j
-
 CREATE TABLE user(userid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                firstname VARCHAR(100), 
 			   lastname VARCHAR(100),

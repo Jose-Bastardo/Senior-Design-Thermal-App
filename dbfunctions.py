@@ -1,10 +1,11 @@
 import mariadb
 import datetime
+from databaseinfo import database
 
 #delete all data from database for testing
 def deletedb():
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("Delete from history")
@@ -16,8 +17,8 @@ def deletedb():
 # Insert new user into database
 def newuser(firstname, lastname, email):
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
     # Insert new user information
 
@@ -52,8 +53,8 @@ def newuser(firstname, lastname, email):
 # Insert facial recognition file into database
 def insertfacedb(userid, file):
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     dat = open(file, "rb")
@@ -68,8 +69,8 @@ def insertfacedb(userid, file):
 
 def returnface(datid):
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("Select datfile from dat "
@@ -87,8 +88,8 @@ def returnface(datid):
 
 def returnallfaces():
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("Select userid, datfile from dat")
@@ -108,8 +109,8 @@ def returnallfaces():
 # Print user information
 def printuser(userid):
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("SELECT userid, firstname, lastname, email FROM user "
@@ -128,8 +129,8 @@ def printuser(userid):
 
 def returnuser(userid):
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("SELECT firstname, lastname, email FROM user "
@@ -145,8 +146,8 @@ def returnuser(userid):
 
 def searchuser(userid):
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("SELECT userid, firstname, lastname, email FROM user "
@@ -165,8 +166,8 @@ def newscanhist(userid, temp, passed):
     x = datetime.datetime.now()
 
     # Establish connection to database
-    connection = mariadb.connect(user="admin", password="2901567j", database="thermalapp",
-                                 host="thermal-app.ckyrcuyndxij.us-east-2.rds.amazonaws.com")
+    connection = mariadb.connect(user=database.username, password=database.password, database=database.name,
+                                 host=database.host)
     cursor = connection.cursor()
 
     cursor.execute("INSERT INTO history(userid, temp, date, time, passed) VALUES(?,?,STR_TO_DATE(?, '%m/%d/%y'),?,?)",
